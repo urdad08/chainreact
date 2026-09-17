@@ -2,10 +2,12 @@ from __future__ import annotations
 
 import os
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from app.api.synthesize import router as synthesize_router
+from app.core.llm_client import LLMUnavailableError
 
 app = FastAPI(
     title="ChainReact",
@@ -31,6 +33,20 @@ app.add_middleware(
 )
 
 app.include_router(synthesize_router)
+
+
+@app.exception_handler(LLMUnavailableError)
+async def llm_unavailable_handler(request: Request, exc: LLMUnavailableError):
+    # Gemini being temporarily overloaded is not our bug -- surface it as a
+    # 503 with a clear, actionable message the frontend can show directly,
+    # instead of an opaque 500 that looks like something broke here.
+    return JSONResponse(
+        status_code=503,
+        content={
+            "message": str(exc),
+            "retryable": True,
+        },
+    )
 
 
 @app.get("/health")

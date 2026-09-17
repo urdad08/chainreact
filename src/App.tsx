@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ApiError, runSandbox, synthesize } from "./api/client";
 import AgentList from "./components/AgentList";
 import ApprovalGatesEditor from "./components/ApprovalGatesEditor";
@@ -88,6 +88,21 @@ function LiveDemo() {
   const [sandboxReport, setSandboxReport] = useState<SandboxReport | null>(null);
   const [sandboxError, setSandboxError] = useState<string | null>(null);
 
+  // The backend runs on a free-tier host that spins down when idle, so the
+  // first request after inactivity can take 30-60s just to wake up before
+  // any real work happens. Show a reassuring hint after a few seconds
+  // rather than leaving the person staring at a plain spinner wondering if
+  // it's broken.
+  const [showColdStartHint, setShowColdStartHint] = useState(false);
+  useEffect(() => {
+    if (!loading) {
+      setShowColdStartHint(false);
+      return;
+    }
+    const timer = setTimeout(() => setShowColdStartHint(true), 6000);
+    return () => clearTimeout(timer);
+  }, [loading]);
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!requirement.trim()) return;
@@ -174,6 +189,14 @@ function LiveDemo() {
         </button>
       </form>
 
+  {loading && (
+        <p style={{ marginTop: 10, fontSize: 13, color: "#8a6d00" }}>
+          {showColdStartHint
+            ? "Still working — the backend runs on a free tier that sleeps when idle, so the first request can take up to a minute to wake it up. Hang tight."
+            : "Synthesizing your agent system..."}
+        </p>
+      )}
+
       {error && (
         <div
           style={{
@@ -193,6 +216,15 @@ function LiveDemo() {
                 </li>
               ))}
             </ul>
+          )}
+          {error.retryable && (
+            <button
+              type="button"
+              onClick={handleSubmit as unknown as () => void}
+              style={{ ...secondaryButton, marginTop: 12 }}
+            >
+              Retry
+            </button>
           )}
         </div>
       )}

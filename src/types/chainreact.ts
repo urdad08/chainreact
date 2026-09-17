@@ -153,6 +153,7 @@ export interface ApiErrorDetail {
   issues: ValidationIssue[];
   process_spec?: ProcessSpec;
   agent_architecture?: AgentArchitecture;
+  retryable?: boolean;
 }
 
 export interface StepResult {

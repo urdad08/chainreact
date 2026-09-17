@@ -10,6 +10,23 @@ export class ApiError extends Error {
   }
 }
 
+// Parses a failed fetch response into a normalized ApiErrorDetail. Two
+// distinct shapes can come back from the backend: FastAPI's HTTPException(...,
+// detail={...}) wraps our dict under "detail" (used for validation/policy
+// failures), while our LLMUnavailableError handler returns {message,
+// retryable} directly at the top level (used when Gemini itself is
+// overloaded). This normalizes both into one shape the UI can rely on.
+async function parseApiError(res: Response, fallbackMessage: string): Promise<ApiErrorDetail> {
+  const body = await res.json().catch(() => ({}));
+  if (body.detail) {
+    return body.detail as ApiErrorDetail;
+  }
+  if (body.message) {
+    return { message: body.message, issues: [], retryable: body.retryable ?? false };
+  }
+  return { message: fallbackMessage, issues: [], retryable: res.status === 503 };
+}
+
 export interface SynthesizeInput {
   requirement: string;
   allowedPermissions: string[];
@@ -30,12 +47,7 @@ export async function synthesize(input: SynthesizeInput): Promise<PipelineResult
   });
 
   if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    // FastAPI wraps our detail dict under "detail" for HTTPException(422, detail={...})
-    const detail: ApiErrorDetail = body.detail ?? {
-      message: `Request failed with status ${res.status}`,
-      issues: [],
-    };
+    const detail = await parseApiError(res, `Request failed with status ${res.status}`);
     throw new ApiError(detail);
   }
 
@@ -54,11 +66,7 @@ export async function runSandbox(result: PipelineResult): Promise<SandboxReport>
   });
 
   if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    const detail: ApiErrorDetail = body.detail ?? {
-      message: `Sandbox run failed with status ${res.status}`,
-      issues: [],
-    };
+    const detail = await parseApiError(res, `Sandbox run failed with status ${res.status}`);
     throw new ApiError(detail);
   }
 
@@ -75,11 +83,7 @@ export async function sendChatMessage(
   });
 
   if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    const detail: ApiErrorDetail = body.detail ?? {
-      message: `Chat failed with status ${res.status}`,
-      issues: [],
-    };
+    const detail = await parseApiError(res, `Chat failed with status ${res.status}`);
     throw new ApiError(detail);
   }
 
@@ -105,11 +109,7 @@ export async function runExecution(
   });
 
   if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    const detail: ApiErrorDetail = body.detail ?? {
-      message: `Execution failed with status ${res.status}`,
-      issues: [],
-    };
+    const detail = await parseApiError(res, `Execution failed with status ${res.status}`);
     throw new ApiError(detail);
   }
 

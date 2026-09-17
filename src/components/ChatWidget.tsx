@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { sendChatMessage } from "../api/client";
+import { ApiError, sendChatMessage } from "../api/client";
 
 interface ChatTurn {
   role: "user" | "model";
@@ -32,7 +32,11 @@ export default function ChatWidget() {
       const reply = await sendChatMessage(next.map((m) => ({ role: m.role, text: m.text })));
       setMessages((prev) => [...prev, { role: "model", text: reply }]);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Chat request failed");
+      if (err instanceof ApiError && err.detail.retryable) {
+        setError("The AI model is briefly overloaded on Google's side — try sending that again in a moment.");
+      } else {
+        setError(err instanceof Error ? err.message : "Chat request failed");
+      }
     } finally {
       setLoading(false);
     }

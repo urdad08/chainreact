@@ -14,15 +14,29 @@ from __future__ import annotations
 
 import json
 import os
+import time
 from typing import Type, TypeVar
 
 from google import genai
+from google.genai import errors as genai_errors
 from google.genai import types
 from pydantic import BaseModel, ValidationError
 
 T = TypeVar("T", bound=BaseModel)
 
 _client: genai.Client | None = None
+
+# Gemini's own capacity errors (503 UNAVAILABLE, 429 rate limit) are transient
+# and unrelated to anything wrong in our request -- worth a couple of quick
+# retries with backoff before giving up, distinct from the "model returned
+# invalid JSON" retry loop below.
+_TRANSIENT_STATUS_CODES = {429, 503}
+
+
+class LLMUnavailableError(RuntimeError):
+    """Raised when the LLM provider itself is down/overloaded (not our bug).
+    Callers (the API layer) catch this specifically to return a 503 with a
+    clear, actionable message instead of a bare 500."""
 
 
 def get_client() -> genai.Client:
@@ -40,6 +54,31 @@ def get_client() -> genai.Client:
 
 
 MODEL = os.environ.get("CHAINREACT_MODEL", "gemini-3.6-flash")
+
+
+def _generate_with_capacity_retry(*, model: str, contents, config, max_attempts: int = 3):
+    """Wraps client.models.generate_content with backoff specifically for
+    Gemini-side capacity errors (503/429). Anything else (bad request, auth)
+    is raised immediately -- retrying those would just waste time."""
+    client = get_client()
+    last_error: Exception | None = None
+    for attempt in range(max_attempts):
+        try:
+            return client.models.generate_content(model=model, contents=contents, config=config)
+        except genai_errors.APIError as e:
+            status = getattr(e, "code", None) or getattr(e, "status_code", None)
+            last_error = e
+            if status in _TRANSIENT_STATUS_CODES and attempt < max_attempts - 1:
+                time.sleep(1.5 * (attempt + 1))  # 1.5s, 3s
+                continue
+            if status in _TRANSIENT_STATUS_CODES:
+                raise LLMUnavailableError(
+                    "The AI model is temporarily overloaded (Gemini returned "
+                    f"{status}). This is on Google's side, not a bug -- please try again "
+                    "in a minute."
+                ) from e
+            raise
+    raise LLMUnavailableError(f"AI model unavailable after {max_attempts} attempts: {last_error}")
 
 
 def structured_completion(
@@ -62,7 +101,7 @@ def structured_completion(
 
     last_error: Exception | None = None
     for attempt in range(max_retries + 1):
-        response = client.models.generate_content(
+        response = _generate_with_capacity_retry(
             model=MODEL,
             contents=contents,
             config=types.GenerateContentConfig(
@@ -105,7 +144,7 @@ def chat_completion(*, system_prompt: str, history: list[dict[str, str]]) -> str
         types.Content(role=turn["role"], parts=[types.Part(text=turn["text"])])
         for turn in history
     ]
-    response = client.models.generate_content(
+    response = _generate_with_capacity_retry(
         model=MODEL,
         contents=contents,
         config=types.GenerateContentConfig(
