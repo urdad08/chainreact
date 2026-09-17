@@ -110,7 +110,12 @@ engineering contribution here, not the LLM calls themselves.
   any runtime executions) is recorded with a timestamp, in memory and
   appended to `backend/audit_log.jsonl`. The full trail is returned in the
   `/api/synthesize` response and retrievable later via
-  `GET /api/audit/{process_name}`.
+  `GET /api/audit/{process_name}`. **Survives restarts**: the free hosting
+  tier spins the backend process down on inactivity and restarts it on the
+  next request, which would otherwise silently wipe the in-memory trail
+  even though the JSONL file on disk is untouched — `audit.py` replays that
+  file back into memory once at import time, so a trail generated before a
+  spin-down is still there after the server wakes back up.
 - **Deployment gate**: `PipelineResult.deployment_approved` is `true` only
   when the Policy Engine (including tool/permission coverage) is valid
   **and** the sandbox run is `ready_for_deployment`. The dashboard shows
