@@ -121,6 +121,20 @@ engineering contribution here, not the LLM calls themselves.
   **and** the sandbox run is `ready_for_deployment`. The dashboard shows
   this as a clear Approved/Blocked stat, plus the full test table, the
   self-repair log, the audit trail, and an interactive runtime runner.
+- **Dashboard Generator**: the brief's CRM example is explicit that
+  ChainReact should construct "a bounded operational dashboard" for the
+  process, not just an internal spec. `POST /api/dashboard/generate`
+  (wired to a "Download Operational Dashboard" button) renders one
+  self-contained HTML file — no build step, no external JS/CSS — that IS
+  the operational interface for that specific process: an input form built
+  from exactly `ProcessSpec.input_data`, the synthesized agents and
+  workflow shown read-only, and buttons that call the live backend's
+  `/api/runtime/execute` and `/api/sandbox/run` with this process's spec
+  baked in as constants, so the page is bounded to exactly this process —
+  it cannot be repointed at a different one. Deterministic and
+  template-based on purpose (no LLM call): a page a human runs real
+  actions from should never depend on model sampling for its correctness.
+  Open it directly in a browser, or host it anywhere as its own small site.
 - **Project Overview page**: a second view (toggle at the top of the app,
   "Project Overview" vs "Live Demo") built into the same hosted site,
   covering the problem/users/motivation, the solution and user journey,
@@ -167,7 +181,8 @@ chainreact/
 │   │   │   ├── policy.py              Deterministic permission + tool-coverage checks
 │   │   │   ├── repair.py              Deterministic issue-finders + feedback formatting
 │   │   │   ├── workflow_generator.py  Stage 3 (accepts repair feedback)
-│   │   │   └── audit.py               Append-only audit trail (in-memory + JSONL)
+│   │   │   ├── audit.py               Append-only audit trail (in-memory + JSONL, rehydrates on cold start)
+│   │   │   └── dashboard_generator.py Renders the per-process operational dashboard (deterministic, no LLM)
 │   │   ├── testing/
 │   │   │   ├── test_generator.py      Deterministic TestCase generation
 │   │   │   └── test_runner.py         Runs tests + sandbox dry-run → SandboxReport

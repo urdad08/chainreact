@@ -20,6 +20,7 @@ from app.runtime.executor import execute_process
 from app.assistant.chat import chat as assistant_chat
 from app.synthesis import audit
 from app.synthesis.agent_architect import synthesize_agents
+from app.synthesis.dashboard_generator import generate_dashboard_html
 from app.synthesis.policy import check_agent_permissions, check_tool_permission_coverage
 from app.synthesis.repair import MAX_REPAIR_ATTEMPTS, agent_architecture_issues, format_feedback, workflow_issues
 from app.synthesis.requirement_parser import parse_requirement
@@ -82,6 +83,20 @@ class ChatIn(BaseModel):
 
 class ChatOut(BaseModel):
     reply: str
+
+
+class DashboardIn(BaseModel):
+    spec: ProcessSpec
+    architecture: AgentArchitecture
+    workflow: WorkflowGraph
+    backend_base_url: str = Field(
+        "", description="Public URL of the ChainReact backend the generated dashboard should call, e.g. https://chainreact.onrender.com"
+    )
+
+
+class DashboardOut(BaseModel):
+    filename: str
+    html: str
 
 
 class PipelineResult(BaseModel):
@@ -154,6 +169,22 @@ def api_execute_runtime(body: RuntimeIn) -> RuntimeExecutionResult:
 @router.get("/audit/{process_name}", response_model=AuditTrail)
 def api_get_audit_trail(process_name: str) -> AuditTrail:
     return audit.get_trail(process_name)
+
+
+@router.post("/dashboard/generate", response_model=DashboardOut)
+def api_generate_dashboard(body: DashboardIn) -> DashboardOut:
+    """Generate the bounded operational dashboard for this specific,
+    already-synthesized process -- a real, self-contained HTML file the
+    person can download, open, or host anywhere, that only exposes the
+    inputs/agents/approval-gates this ProcessSpec actually declared."""
+    html_doc = generate_dashboard_html(body.spec, body.architecture, body.workflow, body.backend_base_url)
+    slug = "".join(c if c.isalnum() else "-" for c in body.spec.name.lower()).strip("-") or "process"
+    audit.record(
+        body.spec.name, "dashboard_generated",
+        "Operational dashboard HTML generated for this process.",
+        {"backend_base_url": body.backend_base_url},
+    )
+    return DashboardOut(filename=f"{slug}-dashboard.html", html=html_doc)
 
 
 @router.post("/chat", response_model=ChatOut)

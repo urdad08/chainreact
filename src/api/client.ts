@@ -91,6 +91,29 @@ export async function sendChatMessage(
   return data.reply as string;
 }
 
+export async function generateDashboard(
+  result: PipelineResult,
+  backendBaseUrl: string
+): Promise<{ filename: string; html: string }> {
+  const res = await fetch(`${BASE_URL}/api/dashboard/generate`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      spec: result.process_spec,
+      architecture: result.agent_architecture,
+      workflow: result.workflow,
+      backend_base_url: backendBaseUrl,
+    }),
+  });
+
+  if (!res.ok) {
+    const detail = await parseApiError(res, `Dashboard generation failed with status ${res.status}`);
+    throw new ApiError(detail);
+  }
+
+  return res.json();
+}
+
 export async function runExecution(
   result: PipelineResult,
   inputData: Record<string, string>,

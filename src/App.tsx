@@ -4,6 +4,7 @@ import AgentList from "./components/AgentList";
 import ApprovalGatesEditor from "./components/ApprovalGatesEditor";
 import AuditTrailView from "./components/AuditTrailView";
 import ChatWidget from "./components/ChatWidget";
+import DashboardDownload from "./components/DashboardDownload";
 import PermissionsEditor, { PermissionState } from "./components/PermissionsEditor";
 import ProcessSpecView from "./components/ProcessSpecView";
 import RequirementForm, { EXAMPLE_REQUIREMENT } from "./components/RequirementForm";
@@ -285,6 +286,8 @@ function LiveDemo() {
           </div>
 
           <AuditTrailView trail={result.audit_trail} />
+
+          <DashboardDownload result={result} />
 
           <div style={card}>
             <RuntimeRunner result={result} />

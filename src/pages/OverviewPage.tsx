@@ -122,6 +122,12 @@ export default function OverviewPage() {
                 Audit Trail.</li>
               <li>Optionally runs the process against a real sample input via the Runtime Executor,
                 watching real values flow step by step through the graph.</li>
+              <li>Generates an actual, standalone <strong>operational dashboard</strong> for this
+                specific process — a real, deployable HTML page (its own read-only summary of the
+                agents/workflow/approval gates, an input form built from exactly this process's
+                declared fields, and buttons to run it or re-check it) that talks to the live
+                ChainReact backend. This is the "bounded operational dashboard" the brief calls
+                for, not a mockup — download it and open it in any browser.</li>
             </ol>
           </div>
 
@@ -154,6 +160,7 @@ export default function OverviewPage() {
                   <li>Test generation + Sandbox Executor (mock tools)</li>
                   <li>Audit trail + deployment gate</li>
                   <li>Runtime Executor (real per-agent LLM execution)</li>
+                  <li>Generated operational dashboard (standalone HTML app per process)</li>
                   <li>In-app assistant chat</li>
                 </ul>
               </div>
