@@ -53,7 +53,7 @@ def get_client() -> genai.Client:
     return _client
 
 
-MODEL = os.environ.get("CHAINREACT_MODEL", "gemini-3.6-flash")
+MODEL = os.environ.get("CHAINREACT_MODEL", "gemini-3.6-flash-lite")
 
 
 def _generate_with_capacity_retry(*, model: str, contents, config, max_attempts: int = 3):
