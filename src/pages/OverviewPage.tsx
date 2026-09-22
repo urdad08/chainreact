@@ -28,28 +28,28 @@ const tabButton = (active: boolean): React.CSSProperties => ({
 // ---- EDIT THIS SECTION with your real team details before presenting ----
 const TEAM = [
   {
-    name: "Member 1 name",
+    name: "Nilesh Jain",
     role: "Backend — Synthesis Pipeline",
     contribution:
       "Requirement Analyst, Agent Architect, Policy Engine, and the self-repair loop that feeds deterministic validation issues back into the LLM before anything ships.",
     evidence: "backend/app/synthesis/, backend/tests/test_repair*.py",
   },
   {
-    name: "Member 2 name",
+    name: "Aksh Chawla",
     role: "Backend — Sandbox, Runtime & Audit",
     contribution:
       "Sandbox Executor with mock tool calls, the Runtime Executor that plays each agent against sample data, and the Audit Trail module recording every pipeline stage.",
     evidence: "backend/app/sandbox/, backend/app/runtime/, backend/app/synthesis/audit.py",
   },
   {
-    name: "Member 3 name",
+    name: "Aniket Verma",
     role: "Frontend — Dashboard",
     contribution:
       "React + TypeScript dashboard: requirement form, permissions/approval editors, React Flow workflow visualizer, test results view, audit trail view, runtime runner.",
     evidence: "src/components/, src/App.tsx",
   },
   {
-    name: "Member 4 name",
+    name: "Adesh Pratap",
     role: "Integration & Assistant Chat",
     contribution:
       "Wired the full pipeline end to end (frontend ↔ FastAPI ↔ Gemini), added the in-app assistant chat, deployment setup and documentation.",
