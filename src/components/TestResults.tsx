@@ -20,7 +20,7 @@ export default function TestResults({ report }: { report: SandboxReport }) {
           marginBottom: 12,
         }}
       >
-        <h3 style={{ margin: 0 }}>Sandbox &amp; Tests</h3>
+        <h3 style={{ margin: 0 }}>Test results</h3>
         <span
           style={{
             fontWeight: 700,

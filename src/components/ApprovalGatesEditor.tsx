@@ -1,4 +1,5 @@
 import { useState } from "react";
+import HelpTip from "./HelpTip";
 
 interface Props {
   value: string[];
@@ -26,12 +27,16 @@ export default function ApprovalGatesEditor({ value, onChange, candidateActions 
 
   return (
     <div>
-      <label style={{ fontWeight: 600, fontSize: 14 }}>Human approval required before...</label>
-      <p style={{ fontSize: 12, color: "#777", margin: "2px 0 10px 0" }}>
-        Pick from allowed permissions, or type a custom action (e.g. "send_email").
+      <label style={{ fontWeight: 600, fontSize: 15, display: "flex", alignItems: "center", gap: 6 }}>
+        Step 3 — Pick what needs a human's okay first
+        <HelpTip text="For anything listed here, the automation will stop and wait for a person to approve before it goes ahead — it won't just do it on its own. Good for anything sensitive or hard to undo, like sending an email or charging a card." />
+      </label>
+      <p style={{ fontSize: 13, color: "#666", margin: "4px 0 10px 0" }}>
+        Pick from what you allowed above, or type your own (e.g. "send_email"). Leave this empty
+        if nothing needs sign-off.
       </p>
 
-      <div style={{ display: "flex", gap: 6, marginBottom: 8, flexWrap: "wrap" }}>
+      <div style={{ display: "flex", gap: 8, marginBottom: 10, flexWrap: "wrap" }}>
         <select
           value={selected}
           onChange={(e) => {
@@ -41,13 +46,8 @@ export default function ApprovalGatesEditor({ value, onChange, candidateActions 
               setSelected("");
             }
           }}
-          style={{
-            padding: "6px 10px",
-            borderRadius: 6,
-            border: "1px solid #d0d0d8",
-            fontSize: 13,
-            background: "#fff",
-          }}
+          className="cr-input"
+          style={{ background: "#fff" }}
         >
           <option value="">+ add from allowed permissions...</option>
           {availableCandidates.map((a) => (
@@ -67,15 +67,9 @@ export default function ApprovalGatesEditor({ value, onChange, candidateActions 
               setCustomText("");
             }
           }}
-          placeholder="custom action, e.g. send_email"
-          style={{
-            padding: "6px 10px",
-            borderRadius: 6,
-            border: "1px solid #d0d0d8",
-            fontSize: 13,
-            flex: 1,
-            minWidth: 160,
-          }}
+          placeholder="Or type your own, e.g. send_email"
+          className="cr-input"
+          style={{ flex: "1 1 200px" }}
         />
         <button
           type="button"
@@ -83,22 +77,15 @@ export default function ApprovalGatesEditor({ value, onChange, candidateActions 
             addAction(customText);
             setCustomText("");
           }}
-          style={{
-            padding: "6px 14px",
-            borderRadius: 6,
-            border: "1px solid #d97706",
-            background: "#fff",
-            color: "#d97706",
-            fontWeight: 600,
-            cursor: "pointer",
-          }}
+          className="cr-btn"
+          style={{ border: "1px solid #d97706", background: "#fff", color: "#d97706" }}
         >
-          Add gate
+          Add
         </button>
       </div>
 
       <div>
-        {value.length === 0 && <span style={{ fontSize: 13, color: "#999" }}>No approval gates configured.</span>}
+        {value.length === 0 && <span style={{ fontSize: 13, color: "#999" }}>Nothing requires approval yet.</span>}
         {value.map((action) => (
           <span
             key={action}
@@ -109,11 +96,12 @@ export default function ApprovalGatesEditor({ value, onChange, candidateActions 
               border: "1px solid #f0c26b",
               background: "#fff8ec",
               color: "#8a6d00",
-              borderRadius: 6,
-              padding: "4px 10px",
+              borderRadius: 8,
+              padding: "8px 12px",
               fontSize: 13,
-              marginRight: 6,
-              marginBottom: 6,
+              marginRight: 8,
+              marginBottom: 8,
+              minHeight: 36,
             }}
           >
             ⏸ {action}

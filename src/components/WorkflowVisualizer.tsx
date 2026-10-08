@@ -11,6 +11,15 @@ const TYPE_COLOR: Record<string, string> = {
   human_approval: "#d97706",
 };
 
+// Plain-language names for the legend, so nobody has to decode internal type names.
+const LEGEND_LABEL: Record<string, string> = {
+  start: "Start / finish",
+  end: "Start / finish",
+  agent: "An automated helper's step",
+  tool: "Uses a tool (e.g. CRM, email)",
+  human_approval: "Waits for a person's okay",
+};
+
 function layout(graph: WorkflowGraph): { nodes: Node[]; edges: Edge[] } {
   // Simple longest-path layered layout: BFS depth from 'start' determines the column (x),
   // and sibling order at that depth determines the row (y). Good enough for Phase 1 --
@@ -75,20 +84,21 @@ export default function WorkflowVisualizer({ graph }: { graph: WorkflowGraph }) 
 
   return (
     <div>
-      <h3 style={{ margin: "0 0 8px 0" }}>Workflow</h3>
-      <div style={{ height: 420, border: "1px solid #e2e2ea", borderRadius: 10, background: "#fafafe" }}>
+      <div style={{ height: "min(420px, 60vh)", minHeight: 280, border: "1px solid #e2e2ea", borderRadius: 10, background: "#fafafe" }}>
         <ReactFlow nodes={nodes} edges={edges} fitView proOptions={{ hideAttribution: true }}>
           <Background />
           <Controls showInteractive={false} />
         </ReactFlow>
       </div>
-      <div style={{ display: "flex", gap: 16, marginTop: 8, fontSize: 12, color: "#555" }}>
-        {Object.entries(TYPE_COLOR).map(([type, color]) => (
-          <div key={type} style={{ display: "flex", alignItems: "center", gap: 4 }}>
-            <span style={{ width: 10, height: 10, borderRadius: 3, background: color, display: "inline-block" }} />
-            {type}
-          </div>
-        ))}
+      <div style={{ display: "flex", gap: 8, columnGap: 16, flexWrap: "wrap", marginTop: 8, fontSize: 12, color: "#555" }}>
+        {Object.entries(TYPE_COLOR)
+          .filter(([type]) => type !== "end")
+          .map(([type, color]) => (
+            <div key={type} style={{ display: "flex", alignItems: "center", gap: 4 }}>
+              <span style={{ width: 10, height: 10, borderRadius: 3, background: color, display: "inline-block" }} />
+              {LEGEND_LABEL[type] ?? type}
+            </div>
+          ))}
       </div>
     </div>
   );

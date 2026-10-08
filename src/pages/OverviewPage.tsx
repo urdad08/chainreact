@@ -62,9 +62,14 @@ export default function OverviewPage() {
   const [tab, setTab] = useState<Tab>("overview");
 
   return (
-    <div style={{ maxWidth: 1000, margin: "0 auto", padding: "32px 20px", fontFamily: "system-ui, sans-serif" }}>
+    <div className="cr-page">
       <header style={{ marginBottom: 20 }}>
-        <h1 style={{ margin: 0 }}>ChainReact — Project Overview</h1>
+        <h1 style={{ margin: 0, fontSize: "clamp(22px, 5vw, 32px)" }}>ChainReact — Project Overview</h1>
+        <p style={{ color: "#333", marginTop: 8, fontSize: 16, lineHeight: 1.5 }}>
+          <strong>In one sentence:</strong> you describe a business task in plain English, and
+          ChainReact builds, tests, and safety-checks a small team of automated helpers to do it
+          — then lets you try it out. Click <strong>Try it</strong> at the top to see it work.
+        </p>
         <p style={{ color: "#666", marginTop: 4 }}>
           An agent-building-agent system: natural-language requirement → validated, tested,
           sandboxed, and audited multi-agent system.
@@ -150,7 +155,7 @@ export default function OverviewPage() {
 
           <div style={card}>
             <h2 style={sectionTitle}>5. Status: Complete, Limited, Next</h2>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 }}>
+            <div className="cr-grid-3">
               <div>
                 <h4 style={{ color: "#1a7f37" }}>Complete</h4>
                 <ul style={{ fontSize: 13, paddingLeft: 18 }}>

@@ -160,10 +160,18 @@ export function ClassLink({
 }
 
 export function DiagramFrame({ width, height, children }: { width: number; height: number; children: ReactNode }) {
+  // On narrow screens, let the diagram scroll sideways at a readable size
+  // rather than scaling down until the labels are too small to read.
   return (
-    <svg viewBox={`0 0 ${width} ${height}`} width="100%" style={{ background: "#fff", borderRadius: 8 }}>
-      {ARROW_MARKER}
-      {children}
-    </svg>
+    <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+      <svg
+        viewBox={`0 0 ${width} ${height}`}
+        width="100%"
+        style={{ background: "#fff", borderRadius: 8, minWidth: Math.min(width, 620), display: "block" }}
+      >
+        {ARROW_MARKER}
+        {children}
+      </svg>
+    </div>
   );
 }

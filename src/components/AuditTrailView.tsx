@@ -1,3 +1,4 @@
+import HelpTip from "./HelpTip";
 import type { AuditTrail } from "../types/chainreact";
 
 const card: React.CSSProperties = {
@@ -10,11 +11,11 @@ const card: React.CSSProperties = {
 export default function AuditTrailView({ trail }: { trail: AuditTrail }) {
   return (
     <div style={card}>
-      <h3 style={{ marginTop: 0 }}>
-        Audit Trail
+      <h3 style={{ marginTop: 0, display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+        Activity log
+        <HelpTip text="A time-stamped record of everything ChainReact did while building this — what it checked, what it fixed, and whether it decided the result was safe to use. Useful if anyone later asks 'why was this approved?'" />
         <span
           style={{
-            marginLeft: 10,
             fontSize: 12,
             fontWeight: 600,
             padding: "2px 10px",
@@ -23,7 +24,7 @@ export default function AuditTrailView({ trail }: { trail: AuditTrail }) {
             color: trail.deployment_approved ? "#1a7f37" : "#c0341d",
           }}
         >
-          {trail.deployment_approved ? "DEPLOYMENT APPROVED" : "DEPLOYMENT BLOCKED"}
+          {trail.deployment_approved ? "APPROVED" : "BLOCKED"}
         </span>
       </h3>
       <ol style={{ paddingLeft: 18, margin: 0 }}>

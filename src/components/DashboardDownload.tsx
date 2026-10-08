@@ -1,28 +1,11 @@
 import { useState } from "react";
+import HelpTip from "./HelpTip";
 import { ApiError, generateDashboard } from "../api/client";
 import type { PipelineResult } from "../types/chainreact";
 
 const DEFAULT_BACKEND_URL = (import.meta.env.VITE_API_URL as string | undefined) ?? "http://localhost:8000";
 
 const card: React.CSSProperties = { border: "1px solid #e2e2ea", borderRadius: 10, padding: 16, background: "#fff" };
-const primaryButton: React.CSSProperties = {
-  padding: "10px 20px",
-  borderRadius: 8,
-  border: "none",
-  background: "#5b3df0",
-  color: "white",
-  fontWeight: 600,
-  cursor: "pointer",
-};
-const secondaryButton: React.CSSProperties = {
-  padding: "10px 20px",
-  borderRadius: 8,
-  border: "1px solid #5b3df0",
-  background: "#fff",
-  color: "#5b3df0",
-  fontWeight: 600,
-  cursor: "pointer",
-};
 
 export default function DashboardDownload({ result }: { result: PipelineResult }) {
   const [backendUrl, setBackendUrl] = useState(DEFAULT_BACKEND_URL);
@@ -65,34 +48,36 @@ export default function DashboardDownload({ result }: { result: PipelineResult }
 
   return (
     <div style={card}>
-      <h3 style={{ marginTop: 0 }}>Operational Dashboard</h3>
+      <h3 style={{ marginTop: 0, display: "flex", alignItems: "center", gap: 6 }}>
+        Get a ready-made mini app
+        <HelpTip text="ChainReact can package everything it just built into a small, standalone web page that's specific to this task — with its own input form and a Run button. You can preview it right now or download the file and open it in any browser." />
+      </h3>
       <p style={{ fontSize: 13, color: "#777" }}>
-        Generates a real, self-contained website for this process — its own agents, workflow, and
-        input form, bounded to exactly what this ProcessSpec declares. Preview it right here, or
-        download it to open directly in a browser or host anywhere; either way it talks to the
-        backend URL below.
+        Turns this into a simple web page you can use right away — it has a form for your
+        details and a Run button. Preview it now, or download it to keep.
       </p>
       <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+        <button type="button" onClick={() => handleGenerate("preview")} disabled={loading !== null} className="cr-btn cr-btn-secondary">
+          {loading === "preview" ? "Generating..." : "Preview"}
+        </button>
+        <button type="button" onClick={() => handleGenerate("download")} disabled={loading !== null} className="cr-btn cr-btn-primary">
+          {loading === "download" ? "Generating..." : "Download"}
+        </button>
+      </div>
+      <details style={{ marginTop: 12, fontSize: 12, color: "#777" }}>
+        <summary style={{ cursor: "pointer" }}>Advanced</summary>
+        <p style={{ margin: "8px 0 4px 0" }}>
+          Address of the ChainReact service the mini app will talk to (already filled in — you
+          normally don't need to change this).
+        </p>
         <input
           value={backendUrl}
           onChange={(e) => setBackendUrl(e.target.value)}
           placeholder="https://your-chainreact-backend.onrender.com"
-          style={{
-            flex: 1,
-            minWidth: 260,
-            padding: "8px 10px",
-            border: "1px solid #e2e2ea",
-            borderRadius: 6,
-            fontSize: 13,
-          }}
+          className="cr-input"
+          style={{ width: "100%", fontSize: 13 }}
         />
-        <button type="button" onClick={() => handleGenerate("preview")} disabled={loading !== null} style={secondaryButton}>
-          {loading === "preview" ? "Generating..." : "Preview in New Tab"}
-        </button>
-        <button type="button" onClick={() => handleGenerate("download")} disabled={loading !== null} style={primaryButton}>
-          {loading === "download" ? "Generating..." : "Download Operational Dashboard"}
-        </button>
-      </div>
+      </details>
       {lastFilename && !error && (
         <p style={{ marginTop: 10, fontSize: 13, color: "#1a7f37" }}>Ready: {lastFilename}.</p>
       )}

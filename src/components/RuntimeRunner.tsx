@@ -1,3 +1,4 @@
+import HelpTip from "./HelpTip";
 import { useState } from "react";
 import { ApiError, runExecution } from "../api/client";
 import type { PipelineResult, RuntimeExecutionResult, StepResult } from "../types/chainreact";
@@ -56,14 +57,16 @@ export default function RuntimeRunner({ result }: { result: PipelineResult }) {
 
   return (
     <div>
-      <h3 style={{ margin: "0 0 4px 0" }}>Run with sample data</h3>
-      <p style={{ fontSize: 13, color: "#777", margin: "0 0 12px 0" }}>
-        Each agent actually runs (via the LLM) on this sample record, so you can watch real
-        values -- a score, an assignment -- accumulate step by step. This calls the LLM once
-        per agent.
+      <h3 style={{ margin: "0 0 4px 0", display: "flex", alignItems: "center", gap: 6 }}>
+        Try it with an example
+        <HelpTip text="Type in (or auto-fill) one example — say, a single sales lead — and watch each automated helper work on it in turn, step by step. Nothing real is changed; it's a safe test run." />
+      </h3>
+      <p style={{ fontSize: 13, color: "#666", margin: "0 0 12px 0" }}>
+        Fill in the boxes below (or click <strong>Fill sample data</strong>), then run it and watch
+        each step happen. It may take a few seconds per step.
       </p>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
+      <div className="cr-grid-2" style={{ gap: 10, marginBottom: 10 }}>
         {fields.map((field) => (
           <div key={field}>
             <label style={{ fontSize: 12, color: "#555", display: "block", marginBottom: 2 }}>{field}</label>
@@ -84,7 +87,7 @@ export default function RuntimeRunner({ result }: { result: PipelineResult }) {
         ))}
       </div>
 
-      <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 12 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12, flexWrap: "wrap" }}>
         <button
           type="button"
           onClick={fillSampleData}

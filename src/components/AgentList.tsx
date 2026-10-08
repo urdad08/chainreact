@@ -3,7 +3,7 @@ import type { AgentArchitecture } from "../types/chainreact";
 export default function AgentList({ architecture }: { architecture: AgentArchitecture }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-      <h3 style={{ margin: "0 0 4px 0" }}>Agents ({architecture.agents.length})</h3>
+      <h3 style={{ margin: "0 0 4px 0" }}>The helpers ({architecture.agents.length})</h3>
       {architecture.agents.map((agent) => (
         <div
           key={agent.id}

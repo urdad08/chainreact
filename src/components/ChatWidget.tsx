@@ -8,7 +8,7 @@ interface ChatTurn {
 
 const GREETING: ChatTurn = {
   role: "model",
-  text: "Hi! Ask me about how ChainReact works, why a check exists, or general questions about AI agents.",
+  text: "Hi! I can explain anything on this page in simple terms — just ask. For example: \"What is an agent?\" or \"What does approval mean?\"",
 };
 
 export default function ChatWidget() {
@@ -48,34 +48,34 @@ export default function ChatWidget() {
         onClick={() => setOpen(true)}
         style={{
           position: "fixed",
-          bottom: 24,
-          right: 24,
-          width: 56,
-          height: 56,
-          borderRadius: "50%",
+          bottom: 20,
+          right: 20,
+          minHeight: 52,
+          padding: "0 20px",
+          borderRadius: 999,
           border: "none",
           background: "#5b3df0",
           color: "white",
-          fontSize: 22,
+          fontSize: 15,
+          fontWeight: 600,
           cursor: "pointer",
-          boxShadow: "0 4px 14px rgba(0,0,0,0.2)",
+          boxShadow: "0 4px 14px rgba(0,0,0,0.25)",
           zIndex: 1000,
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
         }}
-        aria-label="Open chat"
+        aria-label="Open chat — ask a question"
       >
-        💬
+        <span style={{ fontSize: 20 }}>💬</span> Ask a question
       </button>
     );
   }
 
   return (
     <div
+      className="cr-chat-panel"
       style={{
-        position: "fixed",
-        bottom: 24,
-        right: 24,
-        width: 340,
-        maxHeight: 480,
         display: "flex",
         flexDirection: "column",
         border: "1px solid #e2e2ea",

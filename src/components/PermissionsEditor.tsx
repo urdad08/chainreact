@@ -1,4 +1,5 @@
 import { useState } from "react";
+import HelpTip from "./HelpTip";
 
 // A starter catalog of common tool.operation permissions, grouped by tool.
 // Users can check these directly, or add their own custom permission string.
@@ -26,11 +27,12 @@ const chipBase: React.CSSProperties = {
   display: "inline-flex",
   alignItems: "center",
   gap: 6,
-  borderRadius: 6,
-  padding: "4px 10px",
+  borderRadius: 8,
+  padding: "8px 12px",
   fontSize: 13,
-  marginRight: 6,
-  marginBottom: 6,
+  marginRight: 8,
+  marginBottom: 8,
+  minHeight: 36,
 };
 
 export default function PermissionsEditor({ value, onChange }: Props) {
@@ -78,9 +80,12 @@ export default function PermissionsEditor({ value, onChange }: Props) {
 
   return (
     <div>
-      <label style={{ fontWeight: 600, fontSize: 14 }}>Permissions</label>
-      <p style={{ fontSize: 12, color: "#777", margin: "2px 0 10px 0" }}>
-        Click a permission to cycle: unset → allowed → forbidden → unset.
+      <label style={{ fontWeight: 600, fontSize: 15, display: "flex", alignItems: "center", gap: 6 }}>
+        Step 2 — Decide what it's allowed to touch
+        <HelpTip text="This controls what the automation can actually do. Click any item below once to allow it (turns green), click again to explicitly block it (turns red), and a third click leaves it undecided. Nothing is allowed until you click it." />
+      </label>
+      <p style={{ fontSize: 13, color: "#666", margin: "4px 0 10px 0" }}>
+        For example, allow it to read and update your CRM, but block it from deleting records.
       </p>
 
       {Object.entries(COMMON_PERMISSIONS).map(([group, perms]) => (
@@ -147,7 +152,7 @@ export default function PermissionsEditor({ value, onChange }: Props) {
         </div>
       )}
 
-      <div style={{ display: "flex", gap: 6, marginTop: 6 }}>
+      <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
         <input
           value={customText}
           onChange={(e) => setCustomText(e.target.value)}
@@ -157,28 +162,11 @@ export default function PermissionsEditor({ value, onChange }: Props) {
               addCustom();
             }
           }}
-          placeholder="custom.permission, e.g. inventory.write"
-          style={{
-            flex: 1,
-            padding: "6px 10px",
-            borderRadius: 6,
-            border: "1px solid #d0d0d8",
-            fontSize: 13,
-          }}
+          placeholder="Something else, e.g. inventory.write"
+          className="cr-input"
+          style={{ flex: "1 1 220px" }}
         />
-        <button
-          type="button"
-          onClick={addCustom}
-          style={{
-            padding: "6px 14px",
-            borderRadius: 6,
-            border: "1px solid #5b3df0",
-            background: "#fff",
-            color: "#5b3df0",
-            fontWeight: 600,
-            cursor: "pointer",
-          }}
-        >
+        <button type="button" onClick={addCustom} className="cr-btn cr-btn-secondary">
           Add
         </button>
       </div>

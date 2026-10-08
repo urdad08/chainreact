@@ -1,0 +1,189 @@
+/* Global, responsive baseline for ChainReact. Components still use inline
+   styles for one-off things, but anything that needs to adapt to screen
+   size (grids collapsing to one column, the nav wrapping, touch-friendly
+   tap targets) lives here as real CSS so media queries actually work. */
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: #1a1a2e;
+  background: #f7f7fb;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* ---- Layout containers ---- */
+
+.cr-page {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 20px 16px 60px;
+}
+
+/* Two-column panels (e.g. spec + agent list) collapse to one column on
+   narrower screens instead of squeezing both columns unreadably thin. */
+.cr-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.cr-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 760px) {
+  .cr-grid-2,
+  .cr-grid-3 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---- Top nav ---- */
+
+.cr-nav {
+  position: sticky;
+  top: 0;
+  z-index: 900;
+  background: #f7f7fb;
+  border-bottom: 1px solid #e2e2ea;
+  padding: 10px 16px;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* ---- Buttons & inputs: comfortable touch targets on mobile ---- */
+
+.cr-btn {
+  min-height: 44px;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.cr-btn-primary {
+  background: #5b3df0;
+  color: #fff;
+  border-color: #5b3df0;
+}
+
+.cr-btn-secondary {
+  background: #fff;
+  color: #5b3df0;
+  border-color: #5b3df0;
+}
+
+.cr-input {
+  min-height: 44px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #d8d8e4;
+  font-size: 14px;
+}
+
+/* ---- Help tooltip: a small "?" badge with a plain-language explanation
+   that shows on tap/click/hover, used next to the more technical panels so
+   someone with no background can still follow what a section does. ---- */
+
+.cr-help {
+  position: relative;
+  display: inline-flex;
+}
+
+.cr-help-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #eee9ff;
+  color: #5b3df0;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  flex-shrink: 0;
+}
+
+.cr-help-popover {
+  position: absolute;
+  top: 26px;
+  left: 0;
+  z-index: 50;
+  width: min(280px, 80vw);
+  background: #1a1a2e;
+  color: #fff;
+  font-size: 13px;
+  line-height: 1.45;
+  font-weight: 400;
+  padding: 10px 12px;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+/* On narrow screens, keep the popover from running off the right edge. */
+@media (max-width: 480px) {
+  .cr-help-popover {
+    left: auto;
+    right: 0;
+  }
+}
+
+/* ---- Guide / onboarding card ---- */
+
+.cr-guide-steps {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+@media (max-width: 760px) {
+  .cr-guide-steps {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 420px) {
+  .cr-guide-steps {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---- Chat widget: full-width sheet on small screens instead of a fixed
+   340px box that can overflow a phone's viewport. ---- */
+
+.cr-chat-panel {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  width: 340px;
+  max-width: calc(100vw - 32px);
+  max-height: min(480px, calc(100vh - 100px));
+}
+
+@media (max-width: 480px) {
+  .cr-chat-panel {
+    right: 8px;
+    left: 8px;
+    bottom: 8px;
+    width: auto;
+    max-width: none;
+  }
+}
