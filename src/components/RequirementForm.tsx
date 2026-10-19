@@ -16,9 +16,8 @@ export default function RequirementForm({ value, onChange }: Props) {
         Step 1 — Describe what you want automated
       </label>
       <p style={{ fontSize: 13, color: "#666", margin: 0 }}>
-        Write it like you're explaining it to a new employee: what triggers it, what should
-        happen step by step, and who's allowed to use it. Plain English is fine — no technical
-        terms needed.
+        Explain what starts the process, what should happen step by step, and what a successful
+        result looks like. Plain English is fine — access permissions are reviewed separately below.
       </p>
       <textarea
         id="requirement"

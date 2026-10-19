@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, Literal
+from typing import Any, Dict, List, Literal
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
@@ -22,6 +22,8 @@ from app.synthesis import audit
 from app.synthesis.agent_architect import synthesize_agents
 from app.synthesis.dashboard_generator import generate_dashboard_html
 from app.synthesis.policy import check_agent_permissions, check_tool_permission_coverage
+from app.synthesis.lead_csv import process_lead_csv, process_single_lead
+from app.synthesis.permission_suggester import PermissionSuggestions, suggest_permissions
 from app.synthesis.repair import MAX_REPAIR_ATTEMPTS, agent_architecture_issues, format_feedback, workflow_issues
 from app.synthesis.requirement_parser import parse_requirement
 from app.synthesis.validator import validate_process_spec
@@ -47,6 +49,26 @@ class RequirementIn(BaseModel):
         spec.permissions = Permissions(allowed=self.allowed_permissions, forbidden=self.forbidden_permissions)
         spec.human_approval = [ApprovalGate(action=a, required=True) for a in self.approval_actions]
         return spec
+
+
+class PermissionSuggestionIn(BaseModel):
+    requirement: str = Field(..., min_length=1)
+
+
+class LeadCSVIn(BaseModel):
+    csv_text: str = Field(..., min_length=1)
+    sales_reps: List[str] = Field(default_factory=list)
+
+
+class LeadScoreIn(BaseModel):
+    name: str = Field(..., min_length=1)
+    contact: str = Field(..., min_length=1)
+    email: str = Field(..., min_length=1)
+
+
+class LeadCSVOut(BaseModel):
+    records: List[Dict[str, Any]]
+    total: int
 
 
 class ProcessSpecIn(BaseModel):
@@ -119,6 +141,40 @@ def api_parse_requirement(body: RequirementIn) -> ProcessSpec:
         raise HTTPException(400, "requirement text is empty")
     spec = parse_requirement(body.requirement)
     return body.apply_to(spec)
+
+
+@router.post("/permissions/suggest", response_model=PermissionSuggestions)
+def api_suggest_permissions(body: PermissionSuggestionIn) -> PermissionSuggestions:
+    if not body.requirement.strip():
+        raise HTTPException(400, "requirement text is empty")
+    return suggest_permissions(body.requirement)
+
+
+@router.post("/leads/process-csv", response_model=LeadCSVOut)
+def api_process_lead_csv(body: LeadCSVIn) -> LeadCSVOut:
+    try:
+        result = process_lead_csv(body.csv_text, body.sales_reps)
+    except ValueError as exc:
+        raise HTTPException(400, str(exc)) from exc
+    audit.record(
+        "CSV Lead Qualification", "lead_csv_processed",
+        f"Processed {result['total']} uploaded lead row(s).",
+        {"record_count": result["total"]},
+    )
+    return LeadCSVOut(**result)
+
+
+@router.post("/leads/score")
+def api_score_lead(body: LeadScoreIn) -> Dict[str, Any]:
+    if not body.name.strip() or not body.contact.strip() or not body.email.strip():
+        raise HTTPException(400, "Name, contact, and email are required.")
+    result = process_single_lead(body.name, body.contact, body.email)
+    audit.record(
+        "CSV Lead Qualification", "lead_scored",
+        "Scored one submitted lead.",
+        {"record_count": 1},
+    )
+    return result
 
 
 @router.post("/requirement/validate", response_model=ValidationResult)

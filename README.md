@@ -63,14 +63,12 @@ engineering contribution here, not the LLM calls themselves.
   objective/users, input/output data, trigger, rules, permissions,
   human-approval gates, failure policy, success conditions, and
   cost/latency/privacy limits.
-- **Requirement Analyst**: NL → `ProcessSpec` via one structured LLM call.
-  **Permissions and approval gates are explicitly NOT extracted from this
-  text** — they're configured separately via a dedicated permissions editor
-  and approval-gates editor in the dashboard (click a permission chip to
-  cycle unset → allowed → forbidden → unset), sent to the backend as
-  structured lists, and become the deterministic source of truth for
-  `ProcessSpec.permissions` / `ProcessSpec.human_approval` — the LLM never
-  touches them.
+- **Permission recommendations**: a structured LLM call proposes the minimum
+  catalogued permissions and approval actions for the requirement. Suggestions
+  are editable in the dashboard; once a user changes either editor, later
+  requirement edits do not overwrite those choices. Suggestions are never
+  authorization: the selected lists are sent as structured data and the
+  deterministic policy engine remains the source of truth for agent access.
 - **Validation Engine**: deterministic checks (missing rules, no allowed
   permissions, sensitive actions without an approval gate, zero cost limit,
   etc.) that run without calling the LLM.
@@ -105,6 +103,12 @@ engineering contribution here, not the LLM calls themselves.
   tool call through the same mocks and still honoring human-approval halts.
   This is what lets you watch data flow through the process step by step
   instead of only seeing a structural trace.
+- **CSV Lead Qualification use case**: upload a real CSV with `name` and
+  `email` columns, optionally provide salesperson names, and process every
+  row with deterministic validation, lead scoring, priority classification,
+  and round-robin assignment. Download the enriched CSV. Uploaded row data is
+  processed in memory and is not written to the audit log. This bounded use
+  case does not connect to or modify an external CRM.
 - **Audit Trail**: every stage (parse → validate → synthesize agents →
   policy check → synthesize workflow → sandbox run → deployment gate →
   any runtime executions) is recorded with a timestamp, in memory and
@@ -157,10 +161,11 @@ engineering contribution here, not the LLM calls themselves.
   cards → sandbox test results → audit trail → runtime runner (type in a
   sample record, watch it execute step by step).
 
-Not yet in scope: real MCP/tool integrations (mock tools are used
-everywhere — sandbox and runtime alike — since there are no live CRM/email/
-DB adapters yet), and an actual deployment target (the gate currently
-produces a decision, not a rollout).
+Not yet in scope: real MCP/tool integrations (the synthesized sandbox and
+LLM runtime still use mock CRM/email/DB tools), and an actual deployment
+target (the gate currently produces a decision, not a rollout). The CSV lead
+qualification path is real local data processing, but does not write to an
+external CRM.
 
 ## Repository layout
 

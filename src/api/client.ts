@@ -1,4 +1,4 @@
-import type { ApiErrorDetail, PipelineResult, RuntimeExecutionResult, SandboxReport } from "../types/chainreact";
+import type { ApiErrorDetail, LeadCSVResult, LeadScoreResult, PipelineResult, RuntimeExecutionResult, SandboxReport } from "../types/chainreact";
 
 const BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
 
@@ -32,6 +32,51 @@ export interface SynthesizeInput {
   allowedPermissions: string[];
   forbiddenPermissions: string[];
   approvalActions: string[];
+}
+
+export interface PermissionSuggestion {
+  allowed: string[];
+  forbidden: string[];
+  approval_actions: string[];
+}
+
+export async function suggestPermissions(requirement: string): Promise<PermissionSuggestion> {
+  const res = await fetch(`${BASE_URL}/api/permissions/suggest`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ requirement }),
+  });
+  if (!res.ok) {
+    const detail = await parseApiError(res, `Permission suggestions failed with status ${res.status}`);
+    throw new ApiError(detail);
+  }
+  return res.json();
+}
+
+export async function processLeadCsv(csvText: string, salesReps: string[]): Promise<LeadCSVResult> {
+  const res = await fetch(`${BASE_URL}/api/leads/process-csv`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ csv_text: csvText, sales_reps: salesReps }),
+  });
+  if (!res.ok) {
+    const detail = await parseApiError(res, `Lead CSV processing failed with status ${res.status}`);
+    throw new ApiError(detail);
+  }
+  return res.json();
+}
+
+export async function scoreLead(input: { name: string; contact: string; email: string }): Promise<LeadScoreResult> {
+  const res = await fetch(`${BASE_URL}/api/leads/score`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+  if (!res.ok) {
+    const detail = await parseApiError(res, `Lead scoring failed with status ${res.status}`);
+    throw new ApiError(detail);
+  }
+  return res.json();
 }
 
 export async function synthesize(input: SynthesizeInput): Promise<PipelineResult> {

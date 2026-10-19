@@ -21,6 +21,9 @@ export interface PermissionState {
 interface Props {
   value: PermissionState;
   onChange: (next: PermissionState) => void;
+  suggestions?: (PermissionState & { approvalActions: string[] }) | null;
+  suggestionStatus?: "idle" | "loading" | "ready" | "error";
+  onApplySuggestions?: () => void;
 }
 
 const chipBase: React.CSSProperties = {
@@ -35,7 +38,13 @@ const chipBase: React.CSSProperties = {
   minHeight: 36,
 };
 
-export default function PermissionsEditor({ value, onChange }: Props) {
+export default function PermissionsEditor({
+  value,
+  onChange,
+  suggestions,
+  suggestionStatus = "idle",
+  onApplySuggestions,
+}: Props) {
   const [customText, setCustomText] = useState("");
 
   // Status of a permission: which list (if any) it currently sits in.
@@ -87,6 +96,21 @@ export default function PermissionsEditor({ value, onChange }: Props) {
       <p style={{ fontSize: 13, color: "#666", margin: "4px 0 10px 0" }}>
         For example, allow it to read and update your CRM, but block it from deleting records.
       </p>
+
+      {suggestionStatus !== "idle" && (
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10, flexWrap: "wrap" }}>
+          <span role="status" style={{ fontSize: 12, color: suggestionStatus === "error" ? "#c0341d" : "#555" }}>
+            {suggestionStatus === "loading" && "Analyzing the request for minimum required permissions..."}
+            {suggestionStatus === "ready" && suggestions && `Suggestions: ${suggestions.allowed.length} allowed, ${suggestions.forbidden.length} forbidden, ${suggestions.approvalActions.length} approval gate(s).`}
+            {suggestionStatus === "error" && "Could not generate suggestions. You can still configure permissions below."}
+          </span>
+          {suggestionStatus === "ready" && onApplySuggestions && (
+            <button type="button" onClick={onApplySuggestions} className="cr-btn cr-btn-secondary" style={{ padding: "5px 10px", fontSize: 12 }}>
+              Apply suggestions
+            </button>
+          )}
+        </div>
+      )}
 
       {Object.entries(COMMON_PERMISSIONS).map(([group, perms]) => (
         <div key={group} style={{ marginBottom: 8 }}>

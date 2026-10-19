@@ -1,11 +1,12 @@
-import { useEffect, useState } from "react";
-import { ApiError, runSandbox, synthesize } from "./api/client";
+import { useEffect, useRef, useState } from "react";
+import { ApiError, runSandbox, suggestPermissions, synthesize } from "./api/client";
 import AgentList from "./components/AgentList";
 import ApprovalGatesEditor from "./components/ApprovalGatesEditor";
 import AuditTrailView from "./components/AuditTrailView";
 import ChatWidget from "./components/ChatWidget";
 import DashboardDownload from "./components/DashboardDownload";
 import HelpTip from "./components/HelpTip";
+import LeadCsvRunner from "./components/LeadCsvRunner";
 import PermissionsEditor, { PermissionState } from "./components/PermissionsEditor";
 import ProcessSpecView from "./components/ProcessSpecView";
 import RequirementForm, { EXAMPLE_REQUIREMENT } from "./components/RequirementForm";
@@ -65,10 +66,14 @@ export default function App() {
 function LiveDemo() {
   const [requirement, setRequirement] = useState(EXAMPLE_REQUIREMENT);
   const [permissions, setPermissions] = useState<PermissionState>({
-    allowed: ["crm.read", "crm.write"],
-    forbidden: ["crm.delete"],
+    allowed: [],
+    forbidden: [],
   });
-  const [approvalActions, setApprovalActions] = useState<string[]>(["email.send"]);
+  const [permissionSuggestions, setPermissionSuggestions] = useState<PermissionState | null>(null);
+  const [suggestedApprovalActions, setSuggestedApprovalActions] = useState<string[]>([]);
+  const accessSettingsTouched = useRef(false);
+  const [suggestionStatus, setSuggestionStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
+  const [approvalActions, setApprovalActions] = useState<string[]>([]);
 
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<PipelineResult | null>(null);
@@ -92,6 +97,55 @@ function LiveDemo() {
     const timer = setTimeout(() => setShowColdStartHint(true), 6000);
     return () => clearTimeout(timer);
   }, [loading]);
+
+  useEffect(() => {
+    const text = requirement.trim();
+    if (!text) {
+      setSuggestionStatus("idle");
+      return;
+    }
+
+    let active = true;
+    setSuggestionStatus("loading");
+    const timer = setTimeout(async () => {
+      try {
+        const suggestions = await suggestPermissions(text);
+        if (!active) return;
+        const nextPermissions = { allowed: suggestions.allowed, forbidden: suggestions.forbidden };
+        setPermissionSuggestions(nextPermissions);
+        setSuggestedApprovalActions(suggestions.approval_actions);
+        if (!accessSettingsTouched.current) {
+          setPermissions(nextPermissions);
+          setApprovalActions(suggestions.approval_actions);
+        }
+        setSuggestionStatus("ready");
+      } catch {
+        if (active) setSuggestionStatus("error");
+      }
+    }, 700);
+
+    return () => {
+      active = false;
+      clearTimeout(timer);
+    };
+  }, [requirement]);
+
+  function handlePermissionChange(next: PermissionState) {
+    accessSettingsTouched.current = true;
+    setPermissions(next);
+  }
+
+  function handleApprovalChange(next: string[]) {
+    accessSettingsTouched.current = true;
+    setApprovalActions(next);
+  }
+
+  function applyPermissionSuggestions() {
+    if (!permissionSuggestions) return;
+    setPermissions(permissionSuggestions);
+    setApprovalActions(suggestedApprovalActions);
+    accessSettingsTouched.current = false;
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -194,20 +248,26 @@ function LiveDemo() {
         </div>
 
         <div style={card}>
-          <PermissionsEditor value={permissions} onChange={setPermissions} />
+          <PermissionsEditor
+            value={permissions}
+            onChange={handlePermissionChange}
+            suggestions={permissionSuggestions ? { ...permissionSuggestions, approvalActions: suggestedApprovalActions } : null}
+            suggestionStatus={suggestionStatus}
+            onApplySuggestions={applyPermissionSuggestions}
+          />
         </div>
 
         <div style={card}>
           <ApprovalGatesEditor
             value={approvalActions}
-            onChange={setApprovalActions}
+            onChange={handleApprovalChange}
             candidateActions={permissions.allowed}
           />
         </div>
 
         <button
           type="submit"
-          disabled={loading || !requirement.trim()}
+          disabled={loading || suggestionStatus === "loading" || !requirement.trim()}
           className="cr-btn cr-btn-primary"
           style={{
             alignSelf: "flex-start",
@@ -221,6 +281,10 @@ function LiveDemo() {
           {loading ? "Building your system..." : "Step 4 — Generate"}
         </button>
       </form>
+
+      <div style={{ marginTop: 20 }}>
+        <LeadCsvRunner />
+      </div>
 
       {loading && (
         <p style={{ marginTop: 10, fontSize: 14, color: "#8a6d00", lineHeight: 1.5 }}>

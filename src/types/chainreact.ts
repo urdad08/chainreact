@@ -172,3 +172,18 @@ export interface RuntimeExecutionResult {
   final_context: Record<string, string>;
   halted_at_approval: boolean;
 }
+
+export interface LeadCSVResult {
+  records: Record<string, string | number>[];
+  total: number;
+}
+
+export interface LeadScoreResult extends Record<string, string | number> {
+  name: string;
+  contact: string;
+  email: string;
+  lead_score: number;
+  priority: string;
+  assigned_to: string;
+  validation_errors: string;
+}
