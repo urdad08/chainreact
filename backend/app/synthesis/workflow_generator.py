@@ -34,6 +34,14 @@ Rules:
   output of an existing agent node.
 - Use edge.condition (plain text like 'score >= 50') to represent branching described \
   in the process rules. Omit condition for unconditional edges.
+- HARD RULE: a condition is evaluated at runtime against a context whose ONLY keys are \
+  the exact strings in agents' 'outputs' lists (plus the process's declared input_data \
+  field names). When a condition references one of these, copy that name VERBATIM, \
+  character-for-character, from the AgentArchitecture -- never invent a shorter, \
+  simplified, or differently-cased variable (e.g. if an agent's output is \
+  "sentiment_classification_result", the condition must use exactly that string, never \
+  "sentiment" or "result"). A condition referencing a name that doesn't exist in that \
+  set is a bug -- the branch will silently never take the intended path.
 - The graph must be a single connected flow from 'start' to 'end' -- every node should \
   be reachable.
 - Output must strictly match the WorkflowGraph JSON schema provided.

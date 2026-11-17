@@ -8,6 +8,7 @@ __pycache__/
 # Env
 .env
 audit_log.jsonl
+google_tokens.json
 
 # Node
 node_modules/
@@ -17,3 +18,6 @@ tsconfig.tsbuildinfo
 
 # OS
 .DS_Store
+
+# Local runtime data
+systems_store.json

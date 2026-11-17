@@ -1,11 +1,22 @@
 import { useState } from "react";
+import { Download, FileSpreadsheet, Gauge, Upload } from "lucide-react";
+import N8nNotificationBadge from "./N8nNotificationBadge";
 import { processLeadCsv, scoreLead } from "../api/client";
+import { Badge, Button } from "../ui/primitives";
 import type { LeadCSVResult, LeadScoreResult } from "../types/chainreact";
 
 function csvCell(value: string | number): string {
   let text = String(value);
   if (/^[\t\r ]*[=+\-@]/.test(text)) text = `'${text}`;
   return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+}
+
+function priorityTone(priority: string): "danger" | "warning" | "success" | "neutral" {
+  const p = priority.toLowerCase();
+  if (p.includes("high") || p.includes("hot")) return "danger";
+  if (p.includes("medium") || p.includes("warm")) return "warning";
+  if (p.includes("low") || p.includes("cold")) return "success";
+  return "neutral";
 }
 
 export default function LeadCsvRunner() {
@@ -64,100 +75,164 @@ export default function LeadCsvRunner() {
   const headers = result ? Object.keys(result.records[0] ?? {}) : [];
 
   return (
-    <section aria-labelledby="lead-csv-title" style={{ border: "1px solid #d8d8d8", borderRadius: 8, padding: 16, background: "#fff" }}>
-      <h3 id="lead-csv-title" style={{ margin: "0 0 4px" }}>Process your lead data</h3>
-      <p style={{ color: "#666", fontSize: 13, margin: "0 0 14px" }}>
-        Upload a CSV with <code>name</code> and <code>email</code> columns. The lead qualification rules run on your rows and add a score, priority, validation note, and optional round-robin owner.
-      </p>
-      <form onSubmit={handleScoreLead}>
-        <div className="cr-grid-3" style={{ gap: 12 }}>
-          {([
-            ["name", "Name", "Full name", "text"],
-            ["contact", "Contact", "Phone or contact number", "tel"],
-            ["email", "Email", "name@example.com", "email"],
-          ] as const).map(([key, label, placeholder, type]) => (
-            <label key={key} style={{ display: "grid", gap: 6, fontSize: 13, fontWeight: 600 }}>
-              {label}
+    <section aria-labelledby="lead-csv-title" className="card">
+      <div className="card-header">
+        <div className="row gap-3" style={{ minWidth: 0 }}>
+          <span className="text-secondary row">
+            <FileSpreadsheet size={16} />
+          </span>
+          <div className="stack" style={{ gap: 2, minWidth: 0 }}>
+            <h3 id="lead-csv-title">Process your lead data</h3>
+            <span className="text-sm text-tertiary">
+              Score a single lead, or upload a CSV with <code>name</code> and <code>email</code> columns. The lead
+              qualification rules add a score, priority, validation note, and optional round-robin owner.
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div className="card-body stack gap-5">
+        <form onSubmit={handleScoreLead} className="stack gap-3">
+          <div className="eyebrow">Single lead</div>
+          <div className="grid grid-3" style={{ gap: "var(--sp-3)" }}>
+            {([
+              ["name", "Name", "Full name", "text"],
+              ["contact", "Contact", "Phone or contact number", "tel"],
+              ["email", "Email", "name@example.com", "email"],
+            ] as const).map(([key, label, placeholder, type]) => (
+              <label key={key} className="field">
+                <span className="field-label">{label}</span>
+                <input
+                  className="input"
+                  type={type}
+                  value={lead[key]}
+                  onChange={(event) => setLead({ ...lead, [key]: event.target.value })}
+                  placeholder={placeholder}
+                  required
+                />
+              </label>
+            ))}
+          </div>
+          <div className="row gap-3 wrap">
+            <Button type="submit" variant="primary" loading={scoring} icon={<Gauge size={14} />}>
+              {scoring ? "Scoring lead…" : "Process lead score"}
+            </Button>
+            {leadError && (
+              <span role="alert" className="text-sm text-danger">
+                {leadError}
+              </span>
+            )}
+          </div>
+          {leadScore && (
+            <div role="status" className="card card-muted" style={{ padding: "var(--sp-3) var(--sp-4)" }}>
+              <div className="row gap-4 wrap">
+                <div className="stack" style={{ gap: 0 }}>
+                  <span className="text-xs text-tertiary">Lead score</span>
+                  <span style={{ fontSize: 20, fontWeight: 600, fontVariantNumeric: "tabular-nums" }}>
+                    {leadScore.lead_score}
+                    <span className="text-sm text-tertiary" style={{ fontWeight: 500 }}>/100</span>
+                  </span>
+                </div>
+                <div className="stack gap-1">
+                  <span className="text-xs text-tertiary">Priority</span>
+                  <Badge tone={priorityTone(String(leadScore.priority))}>{leadScore.priority}</Badge>
+                </div>
+              </div>
+              {leadScore.validation_errors && (
+                <p className="text-sm text-warning" style={{ marginTop: 8 }}>
+                  {leadScore.validation_errors}
+                </p>
+              )}
+              <N8nNotificationBadge outcome={leadScore.n8n_notification} />
+            </div>
+          )}
+        </form>
+
+        <hr className="divider" />
+
+        <div className="stack gap-3">
+          <div className="eyebrow">Batch CSV</div>
+          <div className="grid grid-2" style={{ gap: "var(--sp-3)", alignItems: "end" }}>
+            <label className="field">
+              <span className="field-label">Lead CSV (2 MB maximum)</span>
               <input
-                className="cr-input"
-                type={type}
-                value={lead[key]}
-                onChange={(event) => setLead({ ...lead, [key]: event.target.value })}
-                placeholder={placeholder}
-                required
+                type="file"
+                accept=".csv,text/csv"
+                onChange={(event) => {
+                  setFile(event.target.files?.[0] ?? null);
+                  setResult(null);
+                  setError(null);
+                }}
+                style={{ minWidth: 0, maxWidth: "100%" }}
               />
             </label>
-          ))}
+            <label className="field">
+              <span className="field-label">Sales representatives (optional, comma-separated)</span>
+              <input
+                className="input"
+                value={salesRepsText}
+                onChange={(event) => setSalesRepsText(event.target.value)}
+                placeholder="Jordan Lee, Casey Kim"
+              />
+            </label>
+          </div>
+          <div className="row gap-3 wrap">
+            <Button variant="primary" onClick={handleProcess} disabled={!file} loading={loading} icon={<Upload size={14} />}>
+              {loading ? "Processing rows…" : "Process CSV"}
+            </Button>
+            {file && <span className="chip truncate" style={{ maxWidth: 240 }}>{file.name}</span>}
+            <span className="text-xs text-tertiary">Uploaded for in-memory processing; lead rows are not stored.</span>
+          </div>
+          {error && (
+            <p role="alert" className="text-sm text-danger">
+              {error}
+            </p>
+          )}
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 12, flexWrap: "wrap" }}>
-          <button type="submit" disabled={scoring} className="cr-btn cr-btn-primary">
-            {scoring ? "Scoring lead..." : "Process lead score"}
-          </button>
-          {leadError && <span role="alert" style={{ color: "#c0341d", fontSize: 13 }}>{leadError}</span>}
-        </div>
-        {leadScore && (
-          <div role="status" style={{ marginTop: 12, padding: 12, background: "#f4f7f4", border: "1px solid #d5e2d5", borderRadius: 6 }}>
-            <strong>Lead score: {leadScore.lead_score}/100</strong>
-            <span style={{ marginLeft: 12 }}>Priority: {leadScore.priority}</span>
-            {leadScore.validation_errors && <p style={{ color: "#9b4a00", margin: "6px 0 0", fontSize: 13 }}>{leadScore.validation_errors}</p>}
+
+        {result && (
+          <div className="stack gap-2">
+            <div className="row gap-3 wrap" style={{ justifyContent: "space-between" }}>
+              <strong className="text-sm">
+                {result.total} lead{result.total === 1 ? "" : "s"} processed
+              </strong>
+              <Button size="sm" icon={<Download size={14} />} onClick={downloadResults} disabled={result.records.length === 0}>
+                Download results CSV
+              </Button>
+            </div>
+            {headers.length > 0 && (
+              <div className="table-wrap" style={{ maxHeight: 360, overflowY: "auto" }}>
+                <table className="table" style={{ fontSize: 12, whiteSpace: "nowrap" }}>
+                  <thead>
+                    <tr>
+                      {headers.map((header) => (
+                        <th key={header} style={{ position: "sticky", top: 0 }}>
+                          {header}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {result.records.slice(0, 100).map((record, index) => (
+                      <tr key={index}>
+                        {headers.map((header) => (
+                          <td key={header} style={{ padding: "7px 14px" }}>
+                            {record[header]}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+            {result.total > 100 && (
+              <p className="text-xs text-tertiary">Previewing the first 100 rows. The download contains all {result.total} rows.</p>
+            )}
+            <N8nNotificationBadge outcome={result.n8n_notification} />
           </div>
         )}
-      </form>
-      <hr style={{ border: 0, borderTop: "1px solid #e5e5e5", margin: "18px 0" }} />
-      <div className="cr-grid-2" style={{ alignItems: "end", gap: 12 }}>
-        <label style={{ fontSize: 13, display: "grid", gap: 6 }}>
-          Lead CSV (2 MB maximum)
-          <input
-            type="file"
-            accept=".csv,text/csv"
-            onChange={(event) => {
-              setFile(event.target.files?.[0] ?? null);
-              setResult(null);
-              setError(null);
-            }}
-          />
-        </label>
-        <label style={{ fontSize: 13, display: "grid", gap: 6 }}>
-          Sales representatives (optional, comma-separated)
-          <input
-            className="cr-input"
-            value={salesRepsText}
-            onChange={(event) => setSalesRepsText(event.target.value)}
-            placeholder="Jordan Lee, Casey Kim"
-          />
-        </label>
       </div>
-      <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 12, flexWrap: "wrap" }}>
-        <button type="button" onClick={handleProcess} disabled={!file || loading} className="cr-btn cr-btn-primary">
-          {loading ? "Processing rows..." : "Process CSV"}
-        </button>
-        {file && <span style={{ color: "#666", fontSize: 12 }}>{file.name}</span>}
-        <span style={{ color: "#777", fontSize: 12 }}>Uploaded for in-memory processing; lead rows are not stored.</span>
-      </div>
-      {error && <p role="alert" style={{ color: "#c0341d", fontSize: 13 }}>{error}</p>}
-      {result && (
-        <div style={{ marginTop: 16 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap", marginBottom: 8 }}>
-            <strong style={{ fontSize: 13 }}>{result.total} lead{result.total === 1 ? "" : "s"} processed</strong>
-            <button type="button" onClick={downloadResults} className="cr-btn cr-btn-secondary">Download results CSV</button>
-          </div>
-          <div style={{ overflowX: "auto", maxHeight: 360, border: "1px solid #dedede" }}>
-            <table style={{ borderCollapse: "collapse", fontSize: 12, width: "100%", whiteSpace: "nowrap" }}>
-              <thead>
-                <tr>{headers.map((header) => <th key={header} style={{ background: "#f4f5f3", borderBottom: "1px solid #dedede", padding: "8px 10px", textAlign: "left" }}>{header}</th>)}</tr>
-              </thead>
-              <tbody>
-                {result.records.slice(0, 100).map((record, index) => (
-                  <tr key={index}>
-                    {headers.map((header) => <td key={header} style={{ borderBottom: "1px solid #eee", padding: "7px 10px" }}>{record[header]}</td>)}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          {result.total > 100 && <p style={{ color: "#777", fontSize: 12 }}>Previewing the first 100 rows. The download contains all {result.total} rows.</p>}
-        </div>
-      )}
     </section>
   );
 }

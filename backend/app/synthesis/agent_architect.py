@@ -31,7 +31,19 @@ Rules:
   tools and zero permissions is an invalid output -- never produce one.
 - Each agent's 'tools' should reference logical tool names implied by the process \
   (e.g. 'crm', 'email', 'company_database') with the specific operations that agent needs.
+- If an agent's tool is a generic external API call (the process mentions calling a specific \
+  third-party service/endpoint not covered by crm/email/calendar/slack/database/payments), set \
+  that tool's name to 'http' and fill 'config' with {'url': '<the actual endpoint, if the \
+  process stated one, else a clearly-labeled placeholder>', 'method': 'GET' or 'POST'}.
+- If an agent's tool is 'slack', fill 'config' with {'channel': '<the channel named in the \
+  process, else \"#general\">'}. Every other tool's 'config' stays empty.
 - Give each agent a short snake_case id.
+- HARD RULE: every string in 'inputs' and 'outputs' must be a valid Python identifier in \
+  snake_case (e.g. 'sentiment_classification_result', 'lead_score') -- NOT a human-readable \
+  phrase (e.g. NOT "Sentiment classification result"). These exact strings become literal \
+  variable names in the running process's shared data -- the Workflow Synthesizer's branch \
+  conditions and every later agent's own 'inputs' will reference them verbatim, so a vague \
+  or inconsistent name here breaks branching and data hand-off downstream.
 - memory.type should be 'none' unless the agent genuinely needs to remember something \
   across steps (short_term) or across runs (long_term).
 - Output must strictly match the AgentArchitecture JSON schema provided.

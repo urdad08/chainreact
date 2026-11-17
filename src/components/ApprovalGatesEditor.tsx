@@ -1,14 +1,18 @@
 import { useState } from "react";
+import { Hand, Plus, X } from "lucide-react";
 import HelpTip from "./HelpTip";
+import { Button } from "../ui/primitives";
 
 interface Props {
   value: string[];
   onChange: (next: string[]) => void;
   /** Actions currently marked "allowed" in the permissions editor -- offered as quick picks. */
   candidateActions: string[];
+  /** Hide the "Step 3" heading and intro text (e.g. when embedded in an Advanced section that has its own title). */
+  hideHeading?: boolean;
 }
 
-export default function ApprovalGatesEditor({ value, onChange, candidateActions }: Props) {
+export default function ApprovalGatesEditor({ value, onChange, candidateActions, hideHeading = false }: Props) {
   const [selected, setSelected] = useState("");
   const [customText, setCustomText] = useState("");
 
@@ -26,17 +30,21 @@ export default function ApprovalGatesEditor({ value, onChange, candidateActions 
   const availableCandidates = candidateActions.filter((a) => !value.includes(a));
 
   return (
-    <div>
-      <label style={{ fontWeight: 600, fontSize: 15, display: "flex", alignItems: "center", gap: 6 }}>
-        Step 3 — Pick what needs a human's okay first
-        <HelpTip text="For anything listed here, the automation will stop and wait for a person to approve before it goes ahead — it won't just do it on its own. Good for anything sensitive or hard to undo, like sending an email or charging a card." />
-      </label>
-      <p style={{ fontSize: 13, color: "#666", margin: "4px 0 10px 0" }}>
-        Pick from what you allowed above, or type your own (e.g. "send_email"). Leave this empty
-        if nothing needs sign-off.
-      </p>
+    <div className="stack gap-3" style={{ minWidth: 0 }}>
+      {!hideHeading && (
+        <div className="stack gap-1">
+          <label className="row gap-2" style={{ fontWeight: 600, fontSize: 14 }}>
+            Step 3 — Pick what needs a human's okay first
+            <HelpTip text="For anything listed here, the automation will stop and wait for a person to approve before it goes ahead — it won't just do it on its own. Good for anything sensitive or hard to undo, like sending an email or charging a card." />
+          </label>
+          <p className="text-sm text-secondary">
+            Pick from what you allowed above, or type your own (e.g. "send_email"). Leave this empty if nothing needs
+            sign-off.
+          </p>
+        </div>
+      )}
 
-      <div style={{ display: "flex", gap: 8, marginBottom: 10, flexWrap: "wrap" }}>
+      <div className="row gap-2 wrap">
         <select
           value={selected}
           onChange={(e) => {
@@ -46,10 +54,14 @@ export default function ApprovalGatesEditor({ value, onChange, candidateActions 
               setSelected("");
             }
           }}
-          className="cr-input"
-          style={{ background: "#fff" }}
+          className="select"
+          aria-label="Add from allowed permissions"
+          disabled={availableCandidates.length === 0}
+          style={{ flex: "1 1 200px", width: "auto", minWidth: 0, height: 30, fontSize: 12.5 }}
         >
-          <option value="">+ add from allowed permissions...</option>
+          <option value="">
+            {availableCandidates.length === 0 ? "No allowed permissions to pick from" : "Add from allowed permissions…"}
+          </option>
           {availableCandidates.map((a) => (
             <option key={a} value={a}>
               {a}
@@ -68,57 +80,50 @@ export default function ApprovalGatesEditor({ value, onChange, candidateActions 
             }
           }}
           placeholder="Or type your own, e.g. send_email"
-          className="cr-input"
-          style={{ flex: "1 1 200px" }}
+          className="input mono"
+          aria-label="Custom approval action"
+          style={{ flex: "1 1 200px", width: "auto", minWidth: 0, height: 30, fontSize: 12.5 }}
         />
-        <button
-          type="button"
+        <Button
+          size="sm"
+          icon={<Plus size={13} />}
+          disabled={!customText.trim()}
           onClick={() => {
             addAction(customText);
             setCustomText("");
           }}
-          className="cr-btn"
-          style={{ border: "1px solid #d97706", background: "#fff", color: "#d97706" }}
         >
           Add
-        </button>
+        </Button>
       </div>
 
-      <div>
-        {value.length === 0 && <span style={{ fontSize: 13, color: "#999" }}>Nothing requires approval yet.</span>}
+      <div className="row gap-2 wrap">
+        {value.length === 0 && <span className="text-sm text-tertiary">Nothing requires approval yet.</span>}
         {value.map((action) => (
           <span
             key={action}
+            className="row gap-1"
             style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 6,
-              border: "1px solid #f0c26b",
-              background: "#fff8ec",
-              color: "#8a6d00",
-              borderRadius: 8,
-              padding: "8px 12px",
-              fontSize: 13,
-              marginRight: 8,
-              marginBottom: 8,
-              minHeight: 36,
+              height: 26,
+              padding: "0 6px 0 9px",
+              borderRadius: "var(--r-sm)",
+              background: "var(--warning-soft)",
+              color: "var(--warning)",
+              fontFamily: "var(--font-mono)",
+              fontSize: 12,
+              whiteSpace: "nowrap",
             }}
           >
-            ⏸ {action}
+            <Hand size={12} />
+            {action}
             <button
+              type="button"
               onClick={() => removeAction(action)}
               aria-label={`Remove approval gate for ${action}`}
-              style={{
-                border: "none",
-                background: "none",
-                cursor: "pointer",
-                color: "inherit",
-                fontWeight: 700,
-                padding: 0,
-                lineHeight: 1,
-              }}
+              className="row"
+              style={{ border: "none", background: "none", cursor: "pointer", color: "inherit", padding: 2, marginLeft: 2, opacity: 0.8 }}
             >
-              ×
+              <X size={12} />
             </button>
           </span>
         ))}

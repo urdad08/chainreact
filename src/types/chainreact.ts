@@ -47,6 +47,7 @@ export interface ProcessSpec {
 export interface ToolBinding {
   name: string;
   operations: string[];
+  config: Record<string, string>;
 }
 
 export interface Memory {
@@ -113,6 +114,7 @@ export interface AuditTrail {
 }
 
 export interface PipelineResult {
+  system_id: string;
   process_spec: ProcessSpec;
   spec_validation: ValidationResult;
   agent_architecture: AgentArchitecture;
@@ -156,12 +158,25 @@ export interface ApiErrorDetail {
   retryable?: boolean;
 }
 
+export type StepStatus = "ok" | "failed" | "blocked" | "simulated" | "waiting_approval" | "retrying";
+export type RunStatus = "running" | "completed" | "failed" | "waiting_approval";
+
+export interface ToolCallRecord {
+  capability: string;
+  real: boolean;
+  status: "ok" | "simulated" | "blocked" | "failed";
+  detail?: string | null;
+}
+
 export interface StepResult {
   node_id: string;
   type: "start" | "agent" | "tool" | "human_approval" | "end";
   label: string;
+  status: StepStatus;
   output?: Record<string, string> | null;
   tool_calls: string[];
+  tool_call_details: ToolCallRecord[];
+  attempt: number;
   note?: string | null;
 }
 
@@ -170,15 +185,82 @@ export interface RuntimeExecutionResult {
   input_data: Record<string, string>;
   steps: StepResult[];
   final_context: Record<string, string>;
+  status: RunStatus;
   halted_at_approval: boolean;
+  n8n_notification?: N8nExecutionResult | null;
+}
+
+export type BuildType = "website" | "workflow";
+
+export type RelevantIntegration = "gmail" | "calendar" | "crm_leads";
+
+export interface CalendarEventDraft {
+  summary: string;
+  start: string;
+  end: string;
+}
+
+export interface GmailActionDraft {
+  sender: string;
+  label_name: string;
+}
+
+export interface IntentSpec {
+  build_type: BuildType;
+  suggested_name: string;
+  summary: string;
+  requirements: string[];
+  assumptions: string[];
+  success_criteria: string[];
+  out_of_scope: string[];
+  reasoning: string;
+  relevant_integrations: RelevantIntegration[];
+  calendar_event?: CalendarEventDraft | null;
+  gmail_action?: GmailActionDraft | null;
+}
+
+export interface GeneratedWebsite {
+  filename: string;
+  html: string;
+  repair_log: string[];
+}
+
+export interface N8nExecutionResult {
+  configured: boolean;
+  ok: boolean;
+  status_code?: number | null;
+  response_body?: string | null;
+  error?: string | null;
+}
+
+export interface GoogleConnectionStatus {
+  connected: boolean;
+}
+
+export interface GmailLabelResult {
+  sender: string;
+  label_name: string;
+  label_id: string;
+  matched: number;
+  labeled: number;
+  message_ids: string[];
+}
+
+export interface CalendarEvent {
+  id?: string | null;
+  summary: string;
+  start?: string | null;
+  end?: string | null;
+  html_link?: string | null;
 }
 
 export interface LeadCSVResult {
   records: Record<string, string | number>[];
   total: number;
+  n8n_notification?: N8nExecutionResult | null;
 }
 
-export interface LeadScoreResult extends Record<string, string | number> {
+export interface LeadScoreResult extends Record<string, string | number | N8nExecutionResult | null | undefined> {
   name: string;
   contact: string;
   email: string;
@@ -186,4 +268,80 @@ export interface LeadScoreResult extends Record<string, string | number> {
   priority: string;
   assigned_to: string;
   validation_errors: string;
+  n8n_notification?: N8nExecutionResult | null;
+}
+
+export interface ExecutionSummary {
+  run_id: string;
+  system_id: string;
+  process_name: string;
+  status: RunStatus;
+  created_at: string;
+  completed_at: string | null;
+  step_count: number;
+  agent_count: number | null;
+  error?: string | null;
+  awaiting_approval: boolean;
+  running_nodes: string[];
+}
+
+export interface ExecutionSnapshot extends ExecutionSummary {
+  steps: StepResult[];
+  step_times: string[];
+  final_context: Record<string, unknown>;
+  input_data: Record<string, unknown>;
+}
+
+/** Events emitted by GET /api/execution/{run_id}/stream. */
+export type ExecutionStreamEvent =
+  | { type: "step"; step: StepResult; at: string }
+  | { type: "running"; node_ids: string[] }
+  | { type: "done"; status: RunStatus; final_context: Record<string, unknown>; error?: string | null; completed_at?: string | null };
+
+export interface StoredSystemSummary {
+  system_id: string;
+  process_name: string;
+  created_at: string;
+  objective: string;
+  agent_count: number;
+  node_count: number;
+  has_approval_gate: boolean;
+}
+
+export interface StoredSystem {
+  system_id: string;
+  process_name: string;
+  created_at: string;
+  process_spec: ProcessSpec;
+  agent_architecture: AgentArchitecture;
+  workflow: WorkflowGraph;
+}
+
+export interface IntegrationsStatus {
+  google: { configured: boolean; connected: boolean };
+  n8n: { configured: boolean };
+  slack: { configured: boolean };
+  http: { configured: boolean };
+}
+
+export type CapabilityKind = "read" | "write" | "delete" | "external";
+
+export interface ToolInfo {
+  capability: string;
+  category: string;
+  operation: string;
+  kind: CapabilityKind;
+  description: string;
+  real: boolean;
+  available: boolean;
+  availability_reason: string;
+  inputs: string[];
+  outputs: string[];
+}
+
+export interface ClarificationResult {
+  needs_clarification: boolean;
+  clarification_question?: string | null;
+  intent?: IntentSpec | null;
+  requirements_md?: string | null;
 }

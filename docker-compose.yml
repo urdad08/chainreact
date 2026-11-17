@@ -8,6 +8,10 @@ services:
     environment:
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - CHAINREACT_MODEL=${CHAINREACT_MODEL:-gemini-3.5-flash-lite}
+      - N8N_WEBHOOK_URL=${N8N_WEBHOOK_URL:-}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-}
+      - GOOGLE_REDIRECT_URI=${GOOGLE_REDIRECT_URI:-http://localhost:8000/api/integrations/google/callback}
 
   frontend:
     build: .

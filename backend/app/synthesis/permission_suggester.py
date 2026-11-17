@@ -23,6 +23,7 @@ PERMISSION_CATALOG = {
     "calendar.read",
     "calendar.write",
     "notification.send",
+    "http.request",
 }
 
 

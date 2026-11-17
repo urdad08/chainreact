@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { ArrowRight, BookOpen, Boxes, CheckCircle2, CircleDashed, GitBranch, Network, Users, Workflow } from "lucide-react";
 import { UC1_DefineRequirement, UC2_SynthesizeSystem, UC3_TestAndSandbox, UC4_RuntimeAndReview } from "../diagrams/UseCaseDiagrams";
 import {
   SEQ1_RequirementToSpec,
@@ -8,22 +9,17 @@ import {
   SEQ5_RuntimeExecution,
 } from "../diagrams/SequenceDiagrams";
 import { ClassDiagram } from "../diagrams/ClassDiagram";
-
-const card: React.CSSProperties = { border: "1px solid #e2e2ea", borderRadius: 10, padding: 20, background: "#fff" };
-const sectionTitle: React.CSSProperties = { fontSize: 20, fontWeight: 700, margin: "0 0 12px 0" };
+import { Badge, Button, PageHeader, Tabs, type TabDef } from "../ui/primitives";
+import { navigate, routeHref } from "../lib/router";
 
 type Tab = "overview" | "usecase" | "sequence" | "class";
 
-const tabButton = (active: boolean): React.CSSProperties => ({
-  padding: "8px 16px",
-  borderRadius: 8,
-  border: active ? "1px solid #5b3df0" : "1px solid #ddd",
-  background: active ? "#5b3df0" : "#fff",
-  color: active ? "#fff" : "#333",
-  fontWeight: 600,
-  cursor: "pointer",
-  fontSize: 13,
-});
+const TABS: TabDef<Tab>[] = [
+  { id: "overview", label: "Overview", icon: <BookOpen size={14} /> },
+  { id: "usecase", label: "Use case diagrams", icon: <Users size={14} />, count: 4 },
+  { id: "sequence", label: "Sequence diagrams", icon: <GitBranch size={14} />, count: 5 },
+  { id: "class", label: "Class diagram", icon: <Boxes size={14} /> },
+];
 
 // ---- EDIT THIS SECTION with your real team details before presenting ----
 const TEAM = [
@@ -58,188 +54,345 @@ const TEAM = [
 ];
 // ---------------------------------------------------------------------
 
+const PROSE: React.CSSProperties = { maxWidth: 760, lineHeight: 1.7, color: "var(--text-secondary)" };
+
+function DocSection({ number, title, children }: { number: string; title: string; children: React.ReactNode }) {
+  return (
+    <section className="card card-pad stack gap-3" style={{ minWidth: 0 }}>
+      <div className="row gap-3" style={{ alignItems: "baseline" }}>
+        <span className="mono text-xs text-tertiary" style={{ flexShrink: 0 }}>
+          {number}
+        </span>
+        <h2 style={{ fontSize: "var(--fs-md)" }}>{title}</h2>
+      </div>
+      <div className="stack gap-3 cr-doc-prose" style={PROSE}>
+        {children}
+      </div>
+    </section>
+  );
+}
+
+function initials(name: string): string {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((p) => p[0]?.toUpperCase() ?? "")
+    .join("");
+}
+
+function StatusColumn({ tone, icon, title, items }: { tone: "success" | "warning" | "cyan"; icon: React.ReactNode; title: string; items: string[] }) {
+  return (
+    <div className="card card-muted" style={{ padding: "var(--sp-4)", minWidth: 0 }}>
+      <div className="row gap-2" style={{ marginBottom: 10 }}>
+        <Badge tone={tone}>
+          {icon}
+          {title}
+        </Badge>
+        <span className="text-xs text-tertiary">{items.length}</span>
+      </div>
+      <ul className="stack gap-1 text-sm" style={{ margin: 0, paddingLeft: 16, color: "var(--text)" }}>
+        {items.map((it) => (
+          <li key={it}>{it}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+/** Diagram SVGs use fixed light colors, so they sit on a light-scoped "paper" surface that stays legible in dark mode. */
+function DiagramPaper({ children }: { children: React.ReactNode }) {
+  return (
+    <div
+      data-theme="light"
+      className="stack gap-5"
+      style={{
+        background: "var(--bg)",
+        color: "var(--text)",
+        border: "1px solid var(--border)",
+        borderRadius: "var(--r-lg)",
+        padding: "var(--sp-5)",
+        minWidth: 0,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
 export default function OverviewPage() {
   const [tab, setTab] = useState<Tab>("overview");
 
   return (
     <div className="cr-page">
-      <header style={{ marginBottom: 20 }}>
-        <h1 style={{ margin: 0, fontSize: "clamp(22px, 5vw, 32px)" }}>ChainReact — Project Overview</h1>
-        <p style={{ color: "#333", marginTop: 8, fontSize: 16, lineHeight: 1.5 }}>
-          <strong>In one sentence:</strong> you describe a business task in plain English, and
-          ChainReact builds, tests, and safety-checks a small team of automated helpers to do it
-          — then lets you try it out. Click <strong>Try it</strong> at the top to see it work.
-        </p>
-        <p style={{ color: "#666", marginTop: 4 }}>
-          An agent-building-agent system: natural-language requirement → validated, tested,
-          sandboxed, and audited multi-agent system.
-        </p>
-      </header>
+      <style>{`
+        .cr-doc-prose strong { color: var(--text); font-weight: 600; }
+        .cr-doc-prose code { padding: 1px 5px; border-radius: 4px; background: var(--surface-3); color: var(--text); font-size: 0.86em; }
+        .cr-doc-prose ol { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 8px; }
+        .cr-doc-prose ol li::marker { color: var(--text-tertiary); font-variant-numeric: tabular-nums; }
+      `}</style>
 
-      <div style={{ display: "flex", gap: 8, marginBottom: 24, flexWrap: "wrap" }}>
-        <button style={tabButton(tab === "overview")} onClick={() => setTab("overview")}>Overview</button>
-        <button style={tabButton(tab === "usecase")} onClick={() => setTab("usecase")}>Use Case Diagrams (4)</button>
-        <button style={tabButton(tab === "sequence")} onClick={() => setTab("sequence")}>Sequence Diagrams (5)</button>
-        <button style={tabButton(tab === "class")} onClick={() => setTab("class")}>Class Diagram</button>
-      </div>
+      <PageHeader
+        eyebrow="About ChainReact"
+        title="Project overview"
+        description={
+          <>
+            You describe a business task in plain English, and ChainReact builds, tests, and safety-checks a small team of
+            automated helpers to do it — then lets you try it out.
+          </>
+        }
+        actions={
+          <Button variant="primary" iconRight={<ArrowRight size={14} />} onClick={() => navigate("/build")}>
+            Try it
+          </Button>
+        }
+      />
 
-      {tab === "overview" && (
-        <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-          <div style={card}>
-            <h2 style={sectionTitle}>1. Problem, Users &amp; Motivation</h2>
-            <p>
-              Standing up a multi-agent AI system for a real business process today means manually
-              designing agent roles, wiring permissions, building a workflow, and inventing safety
-              checks by hand — slow, easy to get wrong, and hard to audit after the fact. Nobody
-              wants to hand-author a permission boundary and then trust an LLM not to violate it.
-            </p>
-            <p>
-              <strong>Intended users:</strong> process owners and technical teams who need to stand
-              up an agentic workflow (CRM lead management, approvals, onboarding, etc.) quickly,
-              with permissions, human-approval points, and safety checks specified up front rather
-              than bolted on afterward.
-            </p>
-            <p>
-              <strong>Why we picked it:</strong> most "AI agent" demos stop at prompt → JSON → API
-              call. We wanted to build the actual engineering underneath that: requirement
-              representation, agent-system synthesis, deterministic policy enforcement, automated
-              testing in a sandbox, self-repair, and an audit trail — the parts that make an agent
-              system trustworthy enough to actually deploy.
-            </p>
-          </div>
+      <Tabs tabs={TABS} value={tab} onChange={setTab} />
 
-          <div style={card}>
-            <h2 style={sectionTitle}>2. Solution &amp; Main User Journey</h2>
-            <p>
-              A user types a plain-English process requirement and explicitly sets permissions and
-              approval gates in the UI (never inferred from prose). ChainReact then:
-            </p>
-            <ol>
-              <li>Parses the requirement into a validated <code>ProcessSpec</code>.</li>
-              <li>Synthesizes an <code>AgentArchitecture</code> (single-purpose agents with declared
-                inputs/outputs/tools/permissions), self-repairing against a deterministic Policy
-                Engine if it oversteps its permission boundary.</li>
-              <li>Compiles a <code>WorkflowGraph</code> (agents, tool calls, human-approval gates),
-                visualized live with React Flow.</li>
-              <li>Generates tests from the spec and runs them in a Sandbox Executor against mock
-                tools — no real CRM/email/DB is ever touched.</li>
-              <li>Computes a deployment decision (approved/blocked) and records every stage to an
-                Audit Trail.</li>
-              <li>Optionally runs the process against a real sample input via the Runtime Executor,
-                watching real values flow step by step through the graph.</li>
-              <li>Generates an actual, standalone <strong>operational dashboard</strong> for this
-                specific process — a real, deployable HTML page (its own read-only summary of the
-                agents/workflow/approval gates, an input form built from exactly this process's
-                declared fields, and buttons to run it or re-check it) that talks to the live
-                ChainReact backend. This is the "bounded operational dashboard" the brief calls
-                for, not a mockup — download it and open it in any browser.</li>
-            </ol>
-          </div>
-
-          <div style={card}>
-            <h2 style={sectionTitle}>3 &amp; 4. Live Demo &amp; Integration</h2>
-            <p>
-              The live demo runs directly from the dashboard (linked in the nav above): a real
-              requirement is submitted, hits our FastAPI backend, which calls the Gemini API for
-              each synthesis stage, re-validates every LLM output against Pydantic schemas, runs
-              deterministic policy/sandbox checks, and returns one unified result rendered live —
-              workflow diagram, agent contracts, test results, audit trail, and an interactive
-              runtime run, all against the real running system, not fixed sample output.
-            </p>
-            <p style={{ color: "#666", fontSize: 13 }}>
-              Integration points demonstrated live: React frontend ↔ FastAPI backend ↔ Google
-              Gemini API (structured outputs) ↔ deterministic Python validation (Pydantic +
-              custom policy/sandbox logic) ↔ in-app assistant chat (same LLM client, plain text).
-            </p>
-          </div>
-
-          <div style={card}>
-            <h2 style={sectionTitle}>5. Status: Complete, Limited, Next</h2>
-            <div className="cr-grid-3">
-              <div>
-                <h4 style={{ color: "#1a7f37" }}>Complete</h4>
-                <ul style={{ fontSize: 13, paddingLeft: 18 }}>
-                  <li>Requirement → ProcessSpec (LLM, structured, validated)</li>
-                  <li>Agent Architect + Policy Engine + self-repair loop</li>
-                  <li>Workflow Synthesizer + self-repair loop</li>
-                  <li>Test generation + Sandbox Executor (mock tools)</li>
-                  <li>Audit trail + deployment gate</li>
-                  <li>Runtime Executor (real per-agent LLM execution)</li>
-                  <li>Generated operational dashboard (standalone HTML app per process)</li>
-                  <li>In-app assistant chat</li>
-                </ul>
-              </div>
-              <div>
-                <h4 style={{ color: "#8a6d00" }}>Limited</h4>
-                <ul style={{ fontSize: 13, paddingLeft: 18 }}>
-                  <li>Tools are mocked (no live CRM/email/DB adapters yet)</li>
-                  <li>Audit trail persists to a local JSONL file, not a database</li>
-                  <li>Success-condition tests are heuristic/advisory, not exact</li>
-                  <li>Single in-memory process at a time, no multi-tenant storage</li>
-                </ul>
-              </div>
-              <div>
-                <h4 style={{ color: "#c0341d" }}>Next</h4>
-                <ul style={{ fontSize: 13, paddingLeft: 18 }}>
-                  <li>Real MCP/tool integrations behind existing ToolBinding contracts</li>
-                  <li>Persist audit trail to a real, tamper-evident store</li>
-                  <li>An actual deployment target, not just a decision</li>
-                </ul>
+      <div className="tab-panel" key={tab}>
+        {tab === "overview" && (
+          <div className="stack gap-4">
+            <div className="card card-accent card-pad row gap-4 wrap" style={{ alignItems: "flex-start" }}>
+              <span
+                className="row"
+                style={{
+                  justifyContent: "center",
+                  width: 36,
+                  height: 36,
+                  flexShrink: 0,
+                  borderRadius: "var(--r-md)",
+                  background: "var(--accent-soft)",
+                  color: "var(--accent)",
+                }}
+              >
+                <Network size={18} />
+              </span>
+              <div className="stack gap-1 grow" style={{ flexBasis: 260 }}>
+                <strong>An agent-building-agent system</strong>
+                <p className="text-secondary" style={{ lineHeight: 1.6 }}>
+                  Natural-language requirement → validated, tested, sandboxed, and audited multi-agent system. Open{" "}
+                  <a href={routeHref("/build")}>Build</a> to see it work.
+                </p>
               </div>
             </div>
-          </div>
 
-          <div style={card}>
-            <h2 style={sectionTitle}>6. Team Contributions</h2>
-            <p style={{ fontSize: 12, color: "#999", marginTop: -6 }}>
-              (Replace the placeholder names/roles in <code>src/pages/OverviewPage.tsx</code> with
-              your actual team before presenting.)
-            </p>
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              {TEAM.map((m, i) => (
-                <div key={i} style={{ borderTop: i > 0 ? "1px solid #eee" : undefined, paddingTop: i > 0 ? 12 : 0 }}>
-                  <strong>{m.name}</strong> — <span style={{ color: "#5b3df0" }}>{m.role}</span>
-                  <p style={{ margin: "4px 0", fontSize: 13 }}>{m.contribution}</p>
-                  <p style={{ margin: 0, fontSize: 12, color: "#888" }}>Evidence: {m.evidence}</p>
+            <DocSection number="01" title="Problem, users & motivation">
+              <p>
+                Standing up a multi-agent AI system for a real business process today means manually designing agent roles,
+                wiring permissions, building a workflow, and inventing safety checks by hand — slow, easy to get wrong, and
+                hard to audit after the fact. Nobody wants to hand-author a permission boundary and then trust an LLM not to
+                violate it.
+              </p>
+              <p>
+                <strong>Intended users:</strong> process owners and technical teams who need to stand up an agentic workflow
+                (CRM lead management, approvals, onboarding, etc.) quickly, with permissions, human-approval points, and
+                safety checks specified up front rather than bolted on afterward.
+              </p>
+              <p>
+                <strong>Why we picked it:</strong> most "AI agent" demos stop at prompt → JSON → API call. We wanted to build
+                the actual engineering underneath that: requirement representation, agent-system synthesis, deterministic
+                policy enforcement, automated testing in a sandbox, self-repair, and an audit trail — the parts that make an
+                agent system trustworthy enough to actually deploy.
+              </p>
+            </DocSection>
+
+            <DocSection number="02" title="Solution & main user journey">
+              <p>
+                A user types a plain-English process requirement and explicitly sets permissions and approval gates in the UI
+                (never inferred from prose). ChainReact then:
+              </p>
+              <ol>
+                <li>
+                  Parses the requirement into a validated <code>ProcessSpec</code>.
+                </li>
+                <li>
+                  Synthesizes an <code>AgentArchitecture</code> (single-purpose agents with declared
+                  inputs/outputs/tools/permissions), self-repairing against a deterministic Policy Engine if it oversteps its
+                  permission boundary.
+                </li>
+                <li>
+                  Compiles a <code>WorkflowGraph</code> (agents, tool calls, human-approval gates), visualized live with React
+                  Flow.
+                </li>
+                <li>
+                  Generates tests from the spec and runs them in a Sandbox Executor against mock tools — no real CRM/email/DB
+                  is ever touched.
+                </li>
+                <li>Computes a deployment decision (approved/blocked) and records every stage to an Audit Trail.</li>
+                <li>
+                  Optionally runs the process against a real sample input via the Runtime Executor, watching real values flow
+                  step by step through the graph.
+                </li>
+                <li>
+                  Generates an actual, standalone <strong>operational dashboard</strong> for this specific process — a real,
+                  deployable HTML page (its own read-only summary of the agents/workflow/approval gates, an input form built
+                  from exactly this process's declared fields, and buttons to run it or re-check it) that talks to the live
+                  ChainReact backend. This is the "bounded operational dashboard" the brief calls for, not a mockup —
+                  download it and open it in any browser.
+                </li>
+              </ol>
+            </DocSection>
+
+            <DocSection number="03 / 04" title="Live demo & integration">
+              <p>
+                The live demo runs directly from the <a href={routeHref("/build")}>Build</a> page: a real requirement is
+                submitted, hits our FastAPI backend, which calls the Gemini API for each synthesis stage, re-validates every
+                LLM output against Pydantic schemas, runs deterministic policy/sandbox checks, and returns one unified result
+                rendered live — workflow diagram, agent contracts, test results, audit trail, and an interactive runtime run,
+                all against the real running system, not fixed sample output.
+              </p>
+              <span className="eyebrow">Integration points demonstrated live</span>
+              <div className="row gap-2 wrap">
+                {[
+                  "React frontend",
+                  "FastAPI backend",
+                  "Google Gemini API (structured outputs)",
+                  "Deterministic Python validation (Pydantic + policy/sandbox)",
+                  "In-app assistant chat (same LLM client, plain text)",
+                ].map(
+                  (label, i, arr) => (
+                    <span key={label} className="row gap-2">
+                      <span className="chip" style={{ fontFamily: "var(--font-sans)", whiteSpace: "normal", height: "auto", minHeight: 24, padding: "3px 8px" }}>
+                        {label}
+                      </span>
+                      {i < arr.length - 1 && <span className="text-tertiary">↔</span>}
+                    </span>
+                  )
+                )}
+              </div>
+            </DocSection>
+
+            <section className="card card-pad stack gap-4">
+              <div className="row gap-3" style={{ alignItems: "baseline" }}>
+                <span className="mono text-xs text-tertiary">05</span>
+                <h2 style={{ fontSize: "var(--fs-md)" }}>Status: complete, limited, next</h2>
+              </div>
+              <div className="grid grid-3" style={{ gap: "var(--sp-3)" }}>
+                <StatusColumn
+                  tone="success"
+                  icon={<CheckCircle2 size={12} />}
+                  title="Complete"
+                  items={[
+                    "Requirement → ProcessSpec (LLM, structured, validated)",
+                    "Agent Architect + Policy Engine + self-repair loop",
+                    "Workflow Synthesizer + self-repair loop",
+                    "Test generation + Sandbox Executor (mock tools)",
+                    "Audit trail + deployment gate",
+                    "Runtime Executor (real per-agent LLM execution)",
+                    "Generated operational dashboard (standalone HTML app per process)",
+                    "In-app assistant chat",
+                  ]}
+                />
+                <StatusColumn
+                  tone="warning"
+                  icon={<CircleDashed size={12} />}
+                  title="Limited"
+                  items={[
+                    "Tools are mocked (no live CRM/email/DB adapters yet)",
+                    "Audit trail persists to a local JSONL file, not a database",
+                    "Success-condition tests are heuristic/advisory, not exact",
+                    "Single in-memory process at a time, no multi-tenant storage",
+                  ]}
+                />
+                <StatusColumn
+                  tone="cyan"
+                  icon={<ArrowRight size={12} />}
+                  title="Next"
+                  items={[
+                    "Real MCP/tool integrations behind existing ToolBinding contracts",
+                    "Persist audit trail to a real, tamper-evident store",
+                    "An actual deployment target, not just a decision",
+                  ]}
+                />
+              </div>
+            </section>
+
+            <section className="card card-pad stack gap-4">
+              <div className="stack gap-1">
+                <div className="row gap-3" style={{ alignItems: "baseline" }}>
+                  <span className="mono text-xs text-tertiary">06</span>
+                  <h2 style={{ fontSize: "var(--fs-md)" }}>Team contributions</h2>
                 </div>
-              ))}
-            </div>
+                <p className="text-xs text-tertiary">
+                  Team details live in <code className="mono">src/pages/OverviewPage.tsx</code> — update them there before
+                  presenting.
+                </p>
+              </div>
+              <div className="grid grid-2" style={{ gap: "var(--sp-3)" }}>
+                {TEAM.map((m) => (
+                  <div key={m.name} className="card card-muted stack gap-3" style={{ padding: "var(--sp-4)", minWidth: 0 }}>
+                    <div className="row gap-3" style={{ minWidth: 0 }}>
+                      <span className="avatar" aria-hidden>
+                        {initials(m.name)}
+                      </span>
+                      <div className="stack" style={{ minWidth: 0, lineHeight: 1.3 }}>
+                        <strong className="truncate">{m.name}</strong>
+                        <span className="text-sm text-accent truncate">{m.role}</span>
+                      </div>
+                    </div>
+                    <p className="text-sm" style={{ lineHeight: 1.6 }}>
+                      {m.contribution}
+                    </p>
+                    <div className="row gap-2" style={{ alignItems: "flex-start", minWidth: 0 }}>
+                      <span className="text-xs text-tertiary" style={{ flexShrink: 0, paddingTop: 1 }}>
+                        Evidence
+                      </span>
+                      <span className="mono text-xs text-secondary" style={{ overflowWrap: "anywhere", minWidth: 0 }}>
+                        {m.evidence}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            <section className="card card-pad stack gap-3">
+              <div className="row gap-3" style={{ alignItems: "baseline" }}>
+                <span className="mono text-xs text-tertiary">07</span>
+                <h2 style={{ fontSize: "var(--fs-md)" }}>Diagrams</h2>
+              </div>
+              <p className="text-secondary">UML diagrams for the system, drawn from the implemented pipeline.</p>
+              <div className="row gap-2 wrap">
+                <Button size="sm" icon={<Users size={14} />} onClick={() => setTab("usecase")}>
+                  Use case diagrams (4)
+                </Button>
+                <Button size="sm" icon={<Workflow size={14} />} onClick={() => setTab("sequence")}>
+                  Sequence diagrams (5)
+                </Button>
+                <Button size="sm" icon={<Boxes size={14} />} onClick={() => setTab("class")}>
+                  Class diagram
+                </Button>
+              </div>
+            </section>
           </div>
+        )}
 
-          <div style={card}>
-            <h2 style={sectionTitle}>7. Diagrams</h2>
-            <p>
-              See the <strong>Use Case Diagrams (4)</strong>, <strong>Sequence Diagrams (5)</strong>,
-              and <strong>Class Diagram</strong> tabs above.
-            </p>
-          </div>
-        </div>
-      )}
+        {tab === "usecase" && (
+          <DiagramPaper>
+            <UC1_DefineRequirement />
+            <UC2_SynthesizeSystem />
+            <UC3_TestAndSandbox />
+            <UC4_RuntimeAndReview />
+          </DiagramPaper>
+        )}
 
-      {tab === "usecase" && (
-        <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-          <UC1_DefineRequirement />
-          <UC2_SynthesizeSystem />
-          <UC3_TestAndSandbox />
-          <UC4_RuntimeAndReview />
-        </div>
-      )}
+        {tab === "sequence" && (
+          <DiagramPaper>
+            <SEQ1_RequirementToSpec />
+            <SEQ2_AgentSynthesisRepair />
+            <SEQ3_WorkflowSynthesisRepair />
+            <SEQ4_SandboxExecution />
+            <SEQ5_RuntimeExecution />
+          </DiagramPaper>
+        )}
 
-      {tab === "sequence" && (
-        <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-          <SEQ1_RequirementToSpec />
-          <SEQ2_AgentSynthesisRepair />
-          <SEQ3_WorkflowSynthesisRepair />
-          <SEQ4_SandboxExecution />
-          <SEQ5_RuntimeExecution />
-        </div>
-      )}
-
-      {tab === "class" && (
-        <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-          <ClassDiagram />
-        </div>
-      )}
+        {tab === "class" && (
+          <DiagramPaper>
+            <ClassDiagram />
+          </DiagramPaper>
+        )}
+      </div>
     </div>
   );
 }

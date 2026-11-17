@@ -131,6 +131,27 @@ def structured_completion(
     raise RuntimeError(f"LLM failed to produce valid {response_model.__name__} after retries: {last_error}")
 
 
+def generate_text(*, system_prompt: str, user_prompt: str, temperature: float = 0.3) -> str:
+    """Plain-text (non-structured) single-turn completion.
+
+    Used for outputs that are not a ProcessSpec-style structured object --
+    e.g. a generated HTML document -- where forcing a JSON schema would
+    just make the model escape/re-encode markup instead of writing it
+    directly. Same capacity-retry handling as structured_completion; no
+    JSON validation loop since there's no schema to validate against.
+    """
+    get_client()
+    response = _generate_with_capacity_retry(
+        model=MODEL,
+        contents=user_prompt,
+        config=types.GenerateContentConfig(
+            system_instruction=system_prompt,
+            temperature=temperature,
+        ),
+    )
+    return response.text or ""
+
+
 def chat_completion(*, system_prompt: str, history: list[dict[str, str]]) -> str:
     """Plain-text (non-structured) completion for the chat assistant.
 

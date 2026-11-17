@@ -7,14 +7,29 @@ Test Generator consume downstream.
 """
 from __future__ import annotations
 
-from typing import List, Literal
+from typing import List, Literal, Optional
 
 from pydantic import BaseModel, Field
+
+
+class ToolConfig(BaseModel):
+    """Fixed-shape, not a free-form dict -- Gemini's structured-output mode
+    rejects a JSON schema with `additionalProperties` (an arbitrary string
+    dict), so every field a tool might need has to be declared explicitly
+    here, left null when it doesn't apply."""
+    url: Optional[str] = Field(None, description="For an 'http' tool: the real endpoint to call.")
+    method: Optional[str] = Field(None, description="For an 'http' tool: 'GET' or 'POST' (default GET).")
+    channel: Optional[str] = Field(None, description="For a 'slack' tool: the channel to post to, e.g. '#sales'.")
 
 
 class ToolBinding(BaseModel):
     name: str = Field(..., description="Logical tool name, e.g. 'crm', 'email'")
     operations: List[str] = Field(..., description="Operations this agent may invoke, e.g. 'read_lead'")
+    config: ToolConfig = Field(
+        default_factory=ToolConfig,
+        description="Only relevant for 'http' (set url/method) or 'slack' (set channel) tools. Leave every "
+        "field null for every other tool.",
+    )
 
 
 class Memory(BaseModel):

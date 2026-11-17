@@ -133,3 +133,81 @@ def test_workflow_issues_flags_unreachable_node():
 def test_format_feedback_produces_bulleted_list():
     text = format_feedback(["problem one", "problem two"])
     assert text == "- problem one\n- problem two"
+
+
+def test_agent_architecture_issues_flags_non_snake_case_output():
+    spec = base_spec()
+    arch = AgentArchitecture(
+        process_name=spec.name,
+        agents=[AgentDef(id="scorer", purpose="Score it", outputs=["Lead Score Result"])],
+    )
+    issues = agent_architecture_issues(spec, arch)
+    assert any("non-snake_case" in i and "Lead Score Result" in i for i in issues)
+
+
+def test_agent_architecture_issues_allows_proper_snake_case_names():
+    spec = base_spec()
+    arch = AgentArchitecture(
+        process_name=spec.name,
+        agents=[AgentDef(id="scorer", purpose="Score it", inputs=["company_name"], outputs=["lead_score"])],
+    )
+    issues = agent_architecture_issues(spec, arch)
+    assert not any("snake_case" in i for i in issues)
+
+
+def test_workflow_issues_flags_condition_referencing_unknown_name():
+    spec = base_spec(human_approval=[])
+    arch = AgentArchitecture(
+        process_name=spec.name,
+        agents=[AgentDef(id="scorer", purpose="x", outputs=["lead_score"])],
+    )
+    workflow = WorkflowGraph(
+        process_name=spec.name,
+        nodes=[
+            WorkflowNode(id="start", type="start"),
+            WorkflowNode(id="scorer", type="agent", agent="scorer"),
+            WorkflowNode(id="end", type="end"),
+        ],
+        edges=[
+            WorkflowEdge(source="start", target="scorer"),
+            # References "score", but the agent's real output is "lead_score" -- exactly
+            # the mismatch that silently broke branching before this check existed.
+            WorkflowEdge(source="scorer", target="end", condition="score >= 50"),
+        ],
+    )
+    issues = workflow_issues(spec, workflow, arch)
+    assert any("score" in i and "lead_score" not in i.split("referencing")[1].split(",")[0] for i in issues)
+    assert any("['score']" in i for i in issues)
+
+
+def test_workflow_issues_allows_condition_referencing_known_output():
+    spec = base_spec(human_approval=[])
+    arch = AgentArchitecture(
+        process_name=spec.name,
+        agents=[AgentDef(id="scorer", purpose="x", outputs=["lead_score"])],
+    )
+    workflow = WorkflowGraph(
+        process_name=spec.name,
+        nodes=[
+            WorkflowNode(id="start", type="start"),
+            WorkflowNode(id="scorer", type="agent", agent="scorer"),
+            WorkflowNode(id="end", type="end"),
+        ],
+        edges=[
+            WorkflowEdge(source="start", target="scorer"),
+            WorkflowEdge(source="scorer", target="end", condition="lead_score >= 50"),
+        ],
+    )
+    issues = workflow_issues(spec, workflow, arch)
+    assert issues == []
+
+
+def test_workflow_issues_skips_condition_check_without_arch():
+    spec = base_spec(human_approval=[])
+    workflow = WorkflowGraph(
+        process_name=spec.name,
+        nodes=[WorkflowNode(id="start", type="start"), WorkflowNode(id="end", type="end")],
+        edges=[WorkflowEdge(source="start", target="end", condition="totally_unknown_name >= 50")],
+    )
+    # No arch passed -- backward compatible, the condition-name check simply doesn't run.
+    assert workflow_issues(spec, workflow) == []

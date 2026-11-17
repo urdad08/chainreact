@@ -16,12 +16,28 @@ synthesize_workflow.
 """
 from __future__ import annotations
 
+import ast
+import re
 from typing import List
 
 from app.schemas import AgentArchitecture, ProcessSpec, WorkflowGraph
 from app.synthesis.policy import check_agent_permissions, check_tool_permission_coverage
 
 MAX_REPAIR_ATTEMPTS = 3
+
+_SNAKE_CASE_RE = re.compile(r"^[a-z][a-z0-9_]*$")
+
+
+def _condition_names(condition: str) -> List[str]:
+    """Every bare identifier referenced in a condition string -- same AST
+    walk runtime/condition_eval.py uses to evaluate one, just collecting
+    names instead of a truth value, so a mismatch can be caught and
+    repaired before execution ever sees it."""
+    try:
+        tree = ast.parse(condition, mode="eval")
+    except SyntaxError:
+        return []
+    return [node.id for node in ast.walk(tree) if isinstance(node, ast.Name)]
 
 
 def agent_architecture_issues(spec: ProcessSpec, arch: AgentArchitecture) -> List[str]:
@@ -35,13 +51,38 @@ def agent_architecture_issues(spec: ProcessSpec, arch: AgentArchitecture) -> Lis
     coverage = check_tool_permission_coverage(arch)
     issues.extend(i.message for i in coverage.issues)
 
+    for agent in arch.agents:
+        for field_name, values in (("inputs", agent.inputs), ("outputs", agent.outputs)):
+            for name in values:
+                if not _SNAKE_CASE_RE.match(name):
+                    issues.append(
+                        f"Agent '{agent.id}' has a non-snake_case {field_name[:-1]} name '{name}' -- "
+                        f"every input/output must be a valid snake_case identifier (e.g. "
+                        f"'lead_score'), not a human-readable phrase, because it becomes a literal "
+                        f"variable name at runtime."
+                    )
+
     return issues
 
 
-def workflow_issues(spec: ProcessSpec, workflow: WorkflowGraph) -> List[str]:
+def workflow_issues(spec: ProcessSpec, workflow: WorkflowGraph, arch: AgentArchitecture | None = None) -> List[str]:
     """Deterministic problems with a synthesized WorkflowGraph that are
     worth sending back to the LLM for a retry."""
     issues: List[str] = []
+
+    if arch is not None:
+        known_names = set(spec.input_data) | {o for a in arch.agents for o in a.outputs}
+        for edge in workflow.edges:
+            if not edge.condition:
+                continue
+            unknown = [n for n in _condition_names(edge.condition) if n not in known_names]
+            if unknown:
+                issues.append(
+                    f"Edge {edge.source} -> {edge.target} has condition \"{edge.condition}\" referencing "
+                    f"{unknown}, which {'is' if len(unknown) == 1 else 'are'} not among any agent's "
+                    f"declared outputs or the process's input_data -- this edge will never activate "
+                    f"correctly. Use the exact output name(s) from the AgentArchitecture instead."
+                )
 
     if spec.human_approval:
         has_gate = any(n.type == "human_approval" for n in workflow.nodes)

@@ -6,6 +6,8 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from app.api.execution import router as execution_router
+from app.api.integrations import router as integrations_router
 from app.api.synthesize import router as synthesize_router
 from app.core.llm_client import LLMUnavailableError
 
@@ -33,6 +35,8 @@ app.add_middleware(
 )
 
 app.include_router(synthesize_router)
+app.include_router(integrations_router)
+app.include_router(execution_router)
 
 
 @app.exception_handler(LLMUnavailableError)

@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
+import { HelpCircle } from "lucide-react";
 
 /**
- * A small "?" badge that shows a plain-language explanation on click (and
+ * A small help icon that shows a plain-language explanation on click (and
  * hover, on devices that support it). Click-to-toggle rather than
  * hover-only so it also works on touchscreens, and closes on an outside
  * click so it doesn't linger in the way.
@@ -17,22 +18,44 @@ export default function HelpTip({ text }: { text: string }) {
         setOpen(false);
       }
     }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
+    }
     document.addEventListener("mousedown", onClickOutside);
-    return () => document.removeEventListener("mousedown", onClickOutside);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onClickOutside);
+      document.removeEventListener("keydown", onKey);
+    };
   }, [open]);
 
   return (
     <span className="cr-help" ref={ref}>
       <button
         type="button"
-        className="cr-help-badge"
         aria-label="What does this mean?"
+        aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
         onMouseEnter={() => setOpen(true)}
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: 0,
+          border: "none",
+          background: "transparent",
+          color: open ? "var(--accent)" : "var(--text-tertiary)",
+          cursor: "help",
+          borderRadius: "var(--r-full)",
+        }}
       >
-        ?
+        <HelpCircle size={14} />
       </button>
-      {open && <div className="cr-help-popover">{text}</div>}
+      {open && (
+        <div className="cr-help-popover" role="tooltip" style={{ top: 20 }}>
+          {text}
+        </div>
+      )}
     </span>
   );
 }

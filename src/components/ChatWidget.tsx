@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { Loader2, MessageSquare, Send, Sparkles, X } from "lucide-react";
 import { ApiError, sendChatMessage } from "../api/client";
+import { Button } from "../ui/primitives";
 
 interface ChatTurn {
   role: "user" | "model";
@@ -17,6 +19,12 @@ export default function ChatWidget() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = listRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  }, [messages.length, loading, error, open]);
 
   async function handleSend(e: React.FormEvent) {
     e.preventDefault();
@@ -45,29 +53,25 @@ export default function ChatWidget() {
   if (!open) {
     return (
       <button
+        type="button"
         onClick={() => setOpen(true)}
+        className="btn"
         style={{
           position: "fixed",
           bottom: 20,
           right: 20,
-          minHeight: 52,
-          padding: "0 20px",
-          borderRadius: 999,
-          border: "none",
-          background: "#5b3df0",
-          color: "white",
-          fontSize: 15,
-          fontWeight: 600,
-          cursor: "pointer",
-          boxShadow: "0 4px 14px rgba(0,0,0,0.25)",
+          height: 40,
+          padding: "0 14px",
+          borderRadius: "var(--r-lg)",
+          background: "var(--surface)",
+          borderColor: "var(--border-strong)",
+          boxShadow: "var(--shadow-lg)",
           zIndex: 1000,
-          display: "flex",
-          alignItems: "center",
-          gap: 8,
         }}
         aria-label="Open chat — ask a question"
       >
-        <span style={{ fontSize: 20 }}>💬</span> Ask a question
+        <MessageSquare size={16} style={{ color: "var(--accent)" }} />
+        <span>Ask a question</span>
       </button>
     );
   }
@@ -75,92 +79,86 @@ export default function ChatWidget() {
   return (
     <div
       className="cr-chat-panel"
+      role="dialog"
+      aria-label="ChainReact Assistant"
       style={{
         display: "flex",
         flexDirection: "column",
-        border: "1px solid #e2e2ea",
-        borderRadius: 12,
-        background: "#fff",
-        boxShadow: "0 8px 30px rgba(0,0,0,0.18)",
+        border: "1px solid var(--border-strong)",
+        borderRadius: "var(--r-xl)",
+        background: "var(--surface)",
+        boxShadow: "var(--shadow-lg)",
         overflow: "hidden",
         zIndex: 1000,
-        fontFamily: "system-ui, sans-serif",
+        animation: "modal-in var(--dur-slow) var(--ease)",
       }}
     >
-      <div
-        style={{
-          padding: "12px 14px",
-          background: "#5b3df0",
-          color: "white",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <strong style={{ fontSize: 14 }}>ChainReact Assistant</strong>
-        <button
-          onClick={() => setOpen(false)}
-          style={{ background: "none", border: "none", color: "white", cursor: "pointer", fontSize: 16 }}
-          aria-label="Close chat"
+      <div className="row gap-2" style={{ padding: "10px 10px 10px 14px", borderBottom: "1px solid var(--border-subtle)" }}>
+        <span
+          className="row"
+          style={{
+            justifyContent: "center",
+            width: 26,
+            height: 26,
+            borderRadius: "var(--r-md)",
+            background: "var(--accent-soft)",
+            color: "var(--accent)",
+            flexShrink: 0,
+          }}
         >
-          ✕
-        </button>
+          <Sparkles size={14} />
+        </span>
+        <div className="stack grow" style={{ lineHeight: 1.2 }}>
+          <strong style={{ fontSize: 13.5 }}>ChainReact Assistant</strong>
+          <span className="text-xs text-tertiary">Ask about this project or AI agents</span>
+        </div>
+        <Button variant="ghost" size="sm" iconOnly icon={<X size={15} />} onClick={() => setOpen(false)} aria-label="Close chat" />
       </div>
 
-      <div style={{ flex: 1, overflowY: "auto", padding: 12, display: "flex", flexDirection: "column", gap: 8 }}>
+      <div ref={listRef} className="stack gap-2" style={{ flex: 1, overflowY: "auto", padding: 12, minHeight: 0 }}>
         {messages.map((m, i) => (
           <div
             key={i}
             style={{
               alignSelf: m.role === "user" ? "flex-end" : "flex-start",
-              background: m.role === "user" ? "#5b3df0" : "#f2f2f7",
-              color: m.role === "user" ? "white" : "#222",
-              padding: "8px 12px",
-              borderRadius: 12,
+              background: m.role === "user" ? "var(--accent-soft)" : "var(--surface-2)",
+              border: `1px solid ${m.role === "user" ? "var(--accent-border)" : "var(--border)"}`,
+              color: "var(--text)",
+              padding: "8px 11px",
+              borderRadius: "var(--r-lg)",
               maxWidth: "85%",
               fontSize: 13,
-              lineHeight: 1.4,
+              lineHeight: 1.5,
               whiteSpace: "pre-wrap",
+              overflowWrap: "anywhere",
             }}
           >
             {m.text}
           </div>
         ))}
         {loading && (
-          <div style={{ alignSelf: "flex-start", color: "#999", fontSize: 12 }}>Thinking…</div>
+          <div className="row gap-2 text-xs text-tertiary" role="status" style={{ alignSelf: "flex-start" }}>
+            <Loader2 size={12} style={{ animation: "spin 0.9s linear infinite" }} />
+            Thinking…
+          </div>
         )}
         {error && (
-          <div style={{ alignSelf: "flex-start", color: "#c0341d", fontSize: 12 }}>{error}</div>
+          <div role="alert" className="text-xs text-danger" style={{ alignSelf: "flex-start", maxWidth: "85%" }}>
+            {error}
+          </div>
         )}
       </div>
 
-      <form onSubmit={handleSend} style={{ display: "flex", borderTop: "1px solid #eee" }}>
+      <form onSubmit={handleSend} className="row gap-2" style={{ padding: 10, borderTop: "1px solid var(--border-subtle)" }}>
         <input
+          className="input"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Ask about this project or AI agents..."
-          style={{
-            flex: 1,
-            border: "none",
-            padding: "10px 12px",
-            fontSize: 13,
-            outline: "none",
-          }}
+          placeholder="Ask a question…"
+          aria-label="Message"
+          style={{ flex: 1, width: "auto", minWidth: 0 }}
         />
-        <button
-          type="submit"
-          disabled={loading || !input.trim()}
-          style={{
-            border: "none",
-            background: "transparent",
-            color: "#5b3df0",
-            fontWeight: 600,
-            padding: "0 14px",
-            cursor: loading ? "default" : "pointer",
-          }}
-        >
-          Send
-        </button>
+        <Button type="submit" variant="primary" iconOnly disabled={loading || !input.trim()} icon={<Send size={14} />} aria-label="Send" />
       </form>
     </div>
   );
