@@ -11,7 +11,7 @@ export default function N8nNotificationBadge({ outcome }: { outcome?: N8nExecuti
     return (
       <p className="row gap-2 text-xs text-tertiary" style={{ marginTop: 8 }}>
         <CircleSlash size={13} style={{ flexShrink: 0 }} />
-        n8n is not configured on the backend — this result wasn't forwarded anywhere.
+        n8n is not configured on the backend: this result wasn't forwarded anywhere.
       </p>
     );
   }
@@ -25,7 +25,7 @@ export default function N8nNotificationBadge({ outcome }: { outcome?: N8nExecuti
       {outcome.ok ? <CheckCircle2 size={13} style={{ flexShrink: 0, marginTop: 1 }} /> : <XCircle size={13} style={{ flexShrink: 0, marginTop: 1 }} />}
       <span style={{ minWidth: 0 }}>
         {outcome.ok
-          ? `Forwarded to n8n — responded with status ${outcome.status_code}.`
+          ? `Forwarded to n8n; responded with status ${outcome.status_code}.`
           : `Could not forward to n8n: ${outcome.error ?? "unknown error"}`}
       </span>
     </p>

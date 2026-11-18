@@ -119,7 +119,7 @@ export default function PermissionsEditor({
       {!hideHeading && (
         <div className="stack gap-1">
           <label className="row gap-2" style={{ fontWeight: 600, fontSize: 14 }}>
-            Step 2 — Decide what it's allowed to touch
+            Step 2: Decide what it's allowed to touch
             <HelpTip text="This controls what the automation can actually do. Click any item below once to allow it (turns green), click again to explicitly block it (turns red), and a third click leaves it undecided. Nothing is allowed until you click it." />
           </label>
           <p className="text-sm text-secondary">

@@ -98,7 +98,7 @@ const INTEGRATION_STATUS_BADGE = {
   configured: { tone: "warning", label: "Not connected" },
   missing: { tone: "outline", label: "Not configured" },
   simulated: { tone: "outline", label: "Simulated" },
-  unknown: { tone: "outline", label: "—" },
+  unknown: { tone: "outline", label: "-" },
 } as const;
 
 const MAX_ATTACHMENT_CHARS = 20000;
@@ -336,7 +336,7 @@ export default function BuildPage() {
     setChatLoading(false);
     setChat((c) => [
       ...c,
-      { role: "assistant", text: out.ok ? `Done — rebuilt with that applied. ${out.summary}` : `I couldn't apply that: ${out.message ?? "unknown error"}` },
+      { role: "assistant", text: out.ok ? `Done. Rebuilt with that applied. ${out.summary}` : `I couldn't apply that: ${out.message ?? "unknown error"}` },
     ]);
   }
 
@@ -595,7 +595,7 @@ export default function BuildPage() {
                     ? "Generating and validating a single-file site."
                     : "Specifying the process, designing agents, wiring the workflow, then validating and self-repairing."}
               </span>
-              {slow && <span className="text-xs text-tertiary">Still working — the model can take a little longer on the first request.</span>}
+              {slow && <span className="text-xs text-tertiary">Still working. The model can take a little longer on the first request.</span>}
             </div>
           </div>
         </Card>
@@ -617,7 +617,7 @@ export default function BuildPage() {
               <ul className="text-sm text-secondary" style={{ margin: 0, paddingLeft: 18 }}>
                 {error.issues.map((i, idx) => (
                   <li key={idx}>
-                    <Badge tone={i.severity === "error" ? "danger" : "warning"}>{i.severity}</Badge> <span className="mono">{i.field}</span> — {i.message}
+                    <Badge tone={i.severity === "error" ? "danger" : "warning"}>{i.severity}</Badge> <span className="mono">{i.field}</span>: {i.message}
                   </li>
                 ))}
               </ul>

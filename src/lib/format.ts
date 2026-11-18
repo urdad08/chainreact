@@ -1,7 +1,7 @@
 export function formatRelativeTime(iso: string | null | undefined, now: number = Date.now()): string {
-  if (!iso) return "—";
+  if (!iso) return "-";
   const t = new Date(iso).getTime();
-  if (Number.isNaN(t)) return "—";
+  if (Number.isNaN(t)) return "-";
   const diff = Math.round((now - t) / 1000);
   if (diff < 5) return "just now";
   if (diff < 60) return `${diff}s ago`;
@@ -15,14 +15,14 @@ export function formatRelativeTime(iso: string | null | undefined, now: number =
 }
 
 export function formatDateTime(iso: string | null | undefined): string {
-  if (!iso) return "—";
+  if (!iso) return "-";
   const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "—";
+  if (Number.isNaN(d.getTime())) return "-";
   return d.toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit" });
 }
 
 export function formatDuration(ms: number | null | undefined): string {
-  if (ms === null || ms === undefined || Number.isNaN(ms) || ms < 0) return "—";
+  if (ms === null || ms === undefined || Number.isNaN(ms) || ms < 0) return "-";
   if (ms < 1000) return `${Math.round(ms)}ms`;
   const s = ms / 1000;
   if (s < 60) return `${s.toFixed(s < 10 ? 1 : 0)}s`;

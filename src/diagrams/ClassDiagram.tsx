@@ -88,7 +88,7 @@ export function ClassDiagram() {
       <DiagramFrame width={width} height={height}>
         {/* ---- connectors first, so classes sit on top ---- */}
 
-        {/* ProcessSpec ◆— its parts */}
+        {/* ProcessSpec ◆- its parts */}
         <Wire points={[[ps.r, ps.y + 40], [busX, ps.y + 40]]} diamond />
         <Wire points={[[busX, Math.min(busTop, ps.y + 40)], [busX, busBottom]]} />
         {parts.map(([n, mult]) => (
@@ -102,11 +102,11 @@ export function ClassDiagram() {
         <Wire points={[[ps.cx, ps.y], [ps.cx, topLane], [aa.cx, topLane], [aa.cx, aa.y]]} arrow />
         <Label x={(ps.cx + aa.cx) / 2} y={topLane - 5} size={10} color="#444">drives synthesis of</Label>
 
-        {/* AgentArchitecture ◆— AgentDef */}
+        {/* AgentArchitecture ◆- AgentDef */}
         <Wire points={[[aa.cx, aa.b], [aa.cx, ad.y]]} diamond />
         <Label x={aa.cx + 6} y={ad.y - 6} anchor="start" size={9} color="#555">1..*</Label>
 
-        {/* AgentDef ◆— ToolBinding, Memory */}
+        {/* AgentDef ◆- ToolBinding, Memory */}
         <Wire points={[[ad.r, tb.cy], [tb.x, tb.cy]]} diamond />
         <Label x={tb.x - 4} y={tb.cy - 5} anchor="end" size={9} color="#555">0..*</Label>
         <Wire points={[[ad.r, ad.b - 20], [gap34, ad.b - 20], [gap34, mem.cy], [mem.x, mem.cy]]} diamond />
@@ -116,7 +116,7 @@ export function ClassDiagram() {
         <Wire points={[[aa.x, aa.cy], [gap23, aa.cy], [gap23, wg.y - 22], [wg.cx, wg.y - 22], [wg.cx, wg.y]]} arrow />
         <Label x={gap23 - 6} y={(aa.cy + wg.y) / 2} size={10} color="#444" rotate={-90}>compiled into</Label>
 
-        {/* WorkflowGraph ◆— WorkflowNode, WorkflowEdge */}
+        {/* WorkflowGraph ◆- WorkflowNode, WorkflowEdge */}
         <Wire points={[[wg.r, wg.y + 40], [wn.x, wg.y + 40]]} diamond />
         <Label x={wn.x - 4} y={wg.y + 35} anchor="end" size={9} color="#555">1..*</Label>
         <Wire points={[[wg.cx, wg.b], [wg.cx, below], [we.cx, below], [we.cx, we.b]]} diamond />
@@ -134,7 +134,7 @@ export function ClassDiagram() {
         <Wire points={[[tc.x, tc.cy], [12, tc.cy], [12, wg.cy], [wg.x, wg.cy]]} arrow dashed />
         <Label x={(12 + wg.x) / 2} y={wg.cy - 6} size={10} color="#444">checked against</Label>
 
-        {/* AuditTrail ◆— AuditEntry */}
+        {/* AuditTrail ◆- AuditEntry */}
         <Wire points={[[at.r, ae.y + 40], [ae.x, ae.y + 40]]} diamond />
         <Label x={ae.x - 4} y={ae.y + 35} anchor="end" size={9} color="#555">1..*</Label>
 

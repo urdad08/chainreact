@@ -196,7 +196,7 @@ export default function ToolsPage() {
                         {t.capability}
                       </td>
                       <td className="text-secondary" style={{ minWidth: 220 }}>
-                        {t.description || "—"}
+                        {t.description || "-"}
                       </td>
                       <td>
                         <KindBadge kind={t.kind} />
@@ -206,10 +206,10 @@ export default function ToolsPage() {
                         <Availability tool={t} />
                       </td>
                       <td style={{ minWidth: 160 }}>
-                        <SchemaChips items={t.inputs} emptyLabel={t.real ? "—" : "Reads any context fields"} />
+                        <SchemaChips items={t.inputs} emptyLabel={t.real ? "-" : "Reads any context fields"} />
                       </td>
                       <td style={{ minWidth: 140 }}>
-                        <SchemaChips items={t.outputs} emptyLabel="—" />
+                        <SchemaChips items={t.outputs} emptyLabel="-" />
                       </td>
                     </tr>
                     {open && (
@@ -228,7 +228,7 @@ export default function ToolsPage() {
                             <Detail label="Handler">{t.real ? "Real handler; performs the action when available and real actions are enabled." : "No real handler; calls are simulated and labeled in run results."}</Detail>
                             <Detail label="Availability">
                               <span className={t.available ? "text-success" : "text-warning"}>{t.available ? "Available" : "Unavailable"}</span>
-                              {t.availability_reason && <span className="text-secondary"> — {t.availability_reason}</span>}
+                              {t.availability_reason && <span className="text-secondary">: {t.availability_reason}</span>}
                             </Detail>
                           </div>
                         </td>

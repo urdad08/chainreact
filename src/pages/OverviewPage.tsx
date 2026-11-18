@@ -25,21 +25,21 @@ const TABS: TabDef<Tab>[] = [
 const TEAM = [
   {
     name: "Nilesh Jain",
-    role: "Backend — Synthesis Pipeline",
+    role: "Backend: Synthesis Pipeline",
     contribution:
       "Requirement Analyst, Agent Architect, Policy Engine, and the self-repair loop that feeds deterministic validation issues back into the LLM before anything ships.",
     evidence: "backend/app/synthesis/, backend/tests/test_repair*.py",
   },
   {
     name: "Aksh Chawla",
-    role: "Backend — Sandbox, Runtime & Audit",
+    role: "Backend: Sandbox, Runtime & Audit",
     contribution:
       "Sandbox Executor with mock tool calls, the Runtime Executor that plays each agent against sample data, and the Audit Trail module recording every pipeline stage.",
     evidence: "backend/app/sandbox/, backend/app/runtime/, backend/app/synthesis/audit.py",
   },
   {
     name: "Aniket Verma",
-    role: "Frontend — Dashboard",
+    role: "Frontend: Dashboard",
     contribution:
       "React + TypeScript dashboard: requirement form, permissions/approval editors, React Flow workflow visualizer, test results view, audit trail view, runtime runner.",
     evidence: "src/components/, src/App.tsx",
@@ -138,7 +138,7 @@ export default function OverviewPage() {
         description={
           <>
             You describe a business task in plain English, and ChainReact builds, tests, and safety-checks a small team of
-            automated helpers to do it — then lets you try it out.
+            automated helpers to do it, and then lets you try it out.
           </>
         }
         actions={
@@ -180,7 +180,7 @@ export default function OverviewPage() {
             <DocSection number="01" title="Problem, users & motivation">
               <p>
                 Standing up a multi-agent AI system for a real business process today means manually designing agent roles,
-                wiring permissions, building a workflow, and inventing safety checks by hand — slow, easy to get wrong, and
+                wiring permissions, building a workflow, and inventing safety checks by hand: slow, easy to get wrong, and
                 hard to audit after the fact. Nobody wants to hand-author a permission boundary and then trust an LLM not to
                 violate it.
               </p>
@@ -192,7 +192,7 @@ export default function OverviewPage() {
               <p>
                 <strong>Why we picked it:</strong> most "AI agent" demos stop at prompt → JSON → API call. We wanted to build
                 the actual engineering underneath that: requirement representation, agent-system synthesis, deterministic
-                policy enforcement, automated testing in a sandbox, self-repair, and an audit trail — the parts that make an
+                policy enforcement, automated testing in a sandbox, self-repair, and an audit trail: the parts that make an
                 agent system trustworthy enough to actually deploy.
               </p>
             </DocSection>
@@ -216,7 +216,7 @@ export default function OverviewPage() {
                   Flow.
                 </li>
                 <li>
-                  Generates tests from the spec and runs them in a Sandbox Executor against mock tools — no real CRM/email/DB
+                  Generates tests from the spec and runs them in a Sandbox Executor against mock tools; no real CRM/email/DB
                   is ever touched.
                 </li>
                 <li>Computes a deployment decision (approved/blocked) and records every stage to an Audit Trail.</li>
@@ -225,10 +225,10 @@ export default function OverviewPage() {
                   step by step through the graph.
                 </li>
                 <li>
-                  Generates an actual, standalone <strong>operational dashboard</strong> for this specific process — a real,
+                  Generates an actual, standalone <strong>operational dashboard</strong> for this specific process: a real,
                   deployable HTML page (its own read-only summary of the agents/workflow/approval gates, an input form built
                   from exactly this process's declared fields, and buttons to run it or re-check it) that talks to the live
-                  ChainReact backend. This is the "bounded operational dashboard" the brief calls for, not a mockup —
+                  ChainReact backend. This is the "bounded operational dashboard" the brief calls for, not a mockup:
                   download it and open it in any browser.
                 </li>
               </ol>
@@ -239,7 +239,7 @@ export default function OverviewPage() {
                 The live demo runs directly from the <a href={routeHref("/build")}>Build</a> page: a real requirement is
                 submitted, hits our FastAPI backend, which calls the Gemini API for each synthesis stage, re-validates every
                 LLM output against Pydantic schemas, runs deterministic policy/sandbox checks, and returns one unified result
-                rendered live — workflow diagram, agent contracts, test results, audit trail, and an interactive runtime run,
+                rendered live: workflow diagram, agent contracts, test results, audit trail, and an interactive runtime run,
                 all against the real running system, not fixed sample output.
               </p>
               <span className="eyebrow">Integration points demonstrated live</span>
@@ -315,7 +315,7 @@ export default function OverviewPage() {
                   <h2 style={{ fontSize: "var(--fs-md)" }}>Team contributions</h2>
                 </div>
                 <p className="text-xs text-tertiary">
-                  Team details live in <code className="mono">src/pages/OverviewPage.tsx</code> — update them there before
+                  Team details live in <code className="mono">src/pages/OverviewPage.tsx</code>; update them there before
                   presenting.
                 </p>
               </div>

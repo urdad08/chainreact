@@ -94,7 +94,7 @@ export default function ExecutionsPage() {
               label: (
                 <span className="row gap-2">
                   {f.label}
-                  <span className="text-tertiary mono text-xs">{data ? counts[f.value] : "—"}</span>
+                  <span className="text-tertiary mono text-xs">{data ? counts[f.value] : "-"}</span>
                 </span>
               ),
             }))}
@@ -196,7 +196,7 @@ export default function ExecutionsPage() {
                   </td>
                   <td>{durationCell(r)}</td>
                   <td className="mono text-sm">{r.step_count}</td>
-                  <td className="mono text-sm">{r.agent_count ?? "—"}</td>
+                  <td className="mono text-sm">{r.agent_count ?? "-"}</td>
                 </tr>
               ))}
             </tbody>

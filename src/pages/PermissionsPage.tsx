@@ -57,7 +57,7 @@ function ApprovalInbox() {
             <tbody>
               {waiting.map((r) => (
                 <tr key={r.run_id}>
-                  <td style={{ fontWeight: 550 }}>{r.process_name || "—"}</td>
+                  <td style={{ fontWeight: 550 }}>{r.process_name || "-"}</td>
                   <td className="mono text-secondary" title={r.run_id}>
                     {shortId(r.run_id)}
                   </td>
@@ -218,7 +218,7 @@ export default function PermissionsPage() {
                           {t.capability}
                         </td>
                         <td className="text-secondary" style={{ minWidth: 200 }}>
-                          {t.description || "—"}
+                          {t.description || "-"}
                         </td>
                         <td>
                           <KindBadge kind={t.kind} />

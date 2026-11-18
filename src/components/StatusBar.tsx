@@ -39,7 +39,7 @@ export default function StatusBar({ result }: { result: PipelineResult }) {
           <span style={{ fontWeight: 600 }}>{approved ? "Deployment approved" : "Deployment blocked"}</span>
         </div>
         <span className="text-sm text-secondary" style={{ minWidth: 0 }}>
-          {approved ? "All checks passed — this system is safe to use." : "Something needs fixing before this system can run."}
+          {approved ? "All checks passed. This system is safe to use." : "Something needs fixing before this system can run."}
         </span>
       </div>
       <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 140px), 1fr))", gap: "var(--sp-3)" }}>

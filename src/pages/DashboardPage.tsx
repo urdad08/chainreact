@@ -217,7 +217,7 @@ export default function DashboardPage() {
 
   const runsLoading = runs.loading && !runs.data;
   const sysLoading = systems.loading && !systems.data;
-  const runValue = (n: number) => (runs.error && !runs.data ? "—" : n);
+  const runValue = (n: number) => (runs.error && !runs.data ? "-" : n);
   const sinceStart = "since backend start";
 
   return (
@@ -238,7 +238,7 @@ export default function DashboardPage() {
         <Stat
           label="Generated systems"
           icon={<Layers size={14} />}
-          value={systems.error && !systems.data ? "—" : systems.data?.length ?? 0}
+          value={systems.error && !systems.data ? "-" : systems.data?.length ?? 0}
           loading={sysLoading}
           foot="Stored on the backend"
         />

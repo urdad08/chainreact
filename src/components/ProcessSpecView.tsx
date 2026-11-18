@@ -27,7 +27,7 @@ function Row({ label, children }: { label: ReactNode; children: ReactNode }) {
 }
 
 function Chips({ items, tone }: { items: string[]; tone?: "success" | "danger" }) {
-  if (items.length === 0) return <span className="text-tertiary">—</span>;
+  if (items.length === 0) return <span className="text-tertiary">-</span>;
   return (
     <div className="row wrap gap-1">
       {items.map((x, i) => (
@@ -50,7 +50,7 @@ function Chips({ items, tone }: { items: string[]; tone?: "success" | "danger" }
 }
 
 function Empty() {
-  return <span className="text-tertiary">—</span>;
+  return <span className="text-tertiary">-</span>;
 }
 
 export default function ProcessSpecView({
@@ -92,7 +92,7 @@ export default function ProcessSpecView({
               <span className="chip mono" style={{ fontSize: 11, height: 22 }}>
                 {spec.trigger.type}
               </span>
-              <span className="text-secondary">{spec.trigger.event || "—"}</span>
+              <span className="text-secondary">{spec.trigger.event || "-"}</span>
             </span>
           </Row>
           <Row label="Inputs">
@@ -183,7 +183,7 @@ export default function ProcessSpecView({
               <span className="chip text-xs">
                 Latency ≤ <span className="mono">{spec.limits.max_latency_seconds}s</span>
               </span>
-              <span className="chip text-xs">Privacy: {spec.limits.privacy || "—"}</span>
+              <span className="chip text-xs">Privacy: {spec.limits.privacy || "-"}</span>
             </div>
           </Row>
           {issues.length > 0 && (

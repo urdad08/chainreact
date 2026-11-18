@@ -10,7 +10,7 @@ export default function AuditTrailView({ trail }: { trail: AuditTrail }) {
       <div className="card-header" style={{ flexWrap: "wrap" }}>
         <div className="row gap-2" style={{ minWidth: 0 }}>
           <h3>Activity log</h3>
-          <HelpTip text="A time-stamped record of everything ChainReact did while building this — what it checked, what it fixed, and whether it decided the result was safe to use. Useful if anyone later asks 'why was this approved?'" />
+          <HelpTip text="A time-stamped record of everything ChainReact did while building this: what it checked, what it fixed, and whether it decided the result was safe to use. Useful if anyone later asks 'why was this approved?'" />
         </div>
         <Badge tone={trail.deployment_approved ? "success" : "danger"}>
           {trail.deployment_approved ? <ShieldCheck size={12} /> : <ShieldOff size={12} />}
@@ -52,7 +52,7 @@ export default function AuditTrailView({ trail }: { trail: AuditTrail }) {
                         {e.stage}
                       </span>
                       <span className="text-xs text-tertiary" title={e.timestamp}>
-                        {formatted === "—" ? e.timestamp || "—" : formatted}
+                        {formatted === "-" ? e.timestamp || "-" : formatted}
                       </span>
                     </div>
                     <span className="text-sm text-secondary" style={{ lineHeight: 1.55, overflowWrap: "anywhere" }}>

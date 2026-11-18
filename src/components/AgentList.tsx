@@ -106,9 +106,9 @@ function AgentCard({ agent, status }: { agent: AgentDef; status?: NodeRunStatus 
       <div className="stack gap-2">
         <SectionLabel>Inputs → Outputs</SectionLabel>
         <div className="row wrap gap-1" style={{ minWidth: 0 }}>
-          {agent.inputs.length ? agent.inputs.map((x) => <MonoChip key={`in-${x}`}>{x}</MonoChip>) : <span className="text-xs text-tertiary">—</span>}
+          {agent.inputs.length ? agent.inputs.map((x) => <MonoChip key={`in-${x}`}>{x}</MonoChip>) : <span className="text-xs text-tertiary">-</span>}
           <ArrowRight size={13} className="text-tertiary" style={{ margin: "0 2px" }} />
-          {agent.outputs.length ? agent.outputs.map((x) => <MonoChip key={`out-${x}`}>{x}</MonoChip>) : <span className="text-xs text-tertiary">—</span>}
+          {agent.outputs.length ? agent.outputs.map((x) => <MonoChip key={`out-${x}`}>{x}</MonoChip>) : <span className="text-xs text-tertiary">-</span>}
         </div>
       </div>
 

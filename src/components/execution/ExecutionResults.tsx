@@ -65,7 +65,7 @@ function classify(raw: unknown): Shape {
 }
 
 function cell(v: unknown): string {
-  if (v === null || v === undefined || v === "") return "—";
+  if (v === null || v === undefined || v === "") return "-";
   return typeof v === "string" ? v : JSON.stringify(v);
 }
 
@@ -89,7 +89,7 @@ function OutputView({ output }: { output: Record<string, unknown> }) {
                   <Badge tone="accent">{shape.value}</Badge>
                 </span>
               )}
-              {shape.kind === "empty" && <span className="text-tertiary">—</span>}
+              {shape.kind === "empty" && <span className="text-tertiary">-</span>}
             </div>
           ))}
         </div>
@@ -330,7 +330,7 @@ export default function ExecutionResults({ run, workflow, architecture, onRunAga
                     <td>
                       <Badge tone={call.status === "ok" ? "success" : call.status === "simulated" ? "warning" : "danger"}>{humanize(call.status)}</Badge>
                     </td>
-                    <td className="text-sm text-secondary" style={{ minWidth: 200 }}>{call.detail || "—"}</td>
+                    <td className="text-sm text-secondary" style={{ minWidth: 200 }}>{call.detail || "-"}</td>
                   </tr>
                 ))}
               </tbody>

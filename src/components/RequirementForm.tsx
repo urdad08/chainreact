@@ -13,11 +13,11 @@ export default function RequirementForm({ value, onChange }: Props) {
   return (
     <div className="field">
       <label htmlFor="requirement" style={{ fontWeight: 600, fontSize: 14, color: "var(--text)" }}>
-        Step 1 — Describe what you want automated
+        Step 1: Describe what you want automated
       </label>
       <p className="text-sm text-secondary">
         Explain what starts the process, what should happen step by step, and what a successful result looks like.
-        Plain English is fine — access permissions are reviewed separately below.
+        Plain English is fine. Access permissions are reviewed separately below.
       </p>
       <textarea
         id="requirement"

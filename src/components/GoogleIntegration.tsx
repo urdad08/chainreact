@@ -209,7 +209,7 @@ export default function GoogleIntegration({
               <HelpTip text="Unlike the rest of this demo, this is NOT simulated -- it calls your real Gmail/Calendar once you connect your Google account, and genuinely acts on your real email or calendar. Shown because your request mentioned it." />
             </h3>
             <span className="text-sm text-tertiary">
-              Connect once, then run on demand — no background polling; you trigger each run yourself.
+              Connect once, then run on demand. No background polling; you trigger each run yourself.
             </span>
           </div>
         </div>

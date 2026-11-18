@@ -80,7 +80,7 @@ export function UC1_DefineRequirement() {
       <h4 style={{ marginTop: 0 }}>UC-1: Define Process Requirement</h4>
       <UseCaseDiagram
         actor="Process Owner"
-        system="ChainReact — Requirement Intake"
+        system="ChainReact: Requirement Intake"
         cases={[
           "Enter NL Requirement",
           "Set Allowed / Forbidden Permissions",
@@ -90,7 +90,7 @@ export function UC1_DefineRequirement() {
       />
       <p style={{ fontSize: 12, color: "#666" }}>
         The Process Owner supplies the requirement text plus explicit, structured permission and
-        approval-gate choices — these never come from LLM-parsed prose (security boundary set by
+        approval-gate choices. These never come from LLM-parsed prose (security boundary set by
         the UI, not inferred).
       </p>
     </div>
@@ -115,7 +115,7 @@ export function UC2_SynthesizeSystem() {
       />
       <p style={{ fontSize: 12, color: "#666" }}>
         &lt;&lt;extend&gt;&gt; Self-Repair fires (dashed) when the deterministic Policy Engine or
-        workflow checks fail — up to MAX_REPAIR_ATTEMPTS retries before anything ships.
+        workflow checks fail, with up to MAX_REPAIR_ATTEMPTS retries before anything ships.
       </p>
     </div>
   );
@@ -136,7 +136,7 @@ export function UC3_TestAndSandbox() {
         ]}
       />
       <p style={{ fontSize: 12, color: "#666" }}>
-        No real CRM/email/DB is ever touched here — the Sandbox Executor walks the compiled graph
+        No real CRM/email/DB is ever touched here. The Sandbox Executor walks the compiled graph
         against in-memory mock tools only. Deployment is approved only if the policy check AND the
         sandbox run both pass.
       </p>

@@ -10,7 +10,7 @@ interface ChatTurn {
 
 const GREETING: ChatTurn = {
   role: "model",
-  text: "Hi! I can explain anything on this page in simple terms — just ask. For example: \"What is an agent?\" or \"What does approval mean?\"",
+  text: "Hi! I can explain anything on this page in simple terms. Just ask. For example: \"What is an agent?\" or \"What does approval mean?\"",
 };
 
 export default function ChatWidget() {
@@ -41,7 +41,7 @@ export default function ChatWidget() {
       setMessages((prev) => [...prev, { role: "model", text: reply }]);
     } catch (err) {
       if (err instanceof ApiError && err.detail.retryable) {
-        setError("The AI model is briefly overloaded on Google's side — try sending that again in a moment.");
+        setError("The AI model is briefly overloaded on Google's side. Try sending that again in a moment.");
       } else {
         setError(err instanceof Error ? err.message : "Chat request failed");
       }
@@ -68,7 +68,7 @@ export default function ChatWidget() {
           boxShadow: "var(--shadow-lg)",
           zIndex: 1000,
         }}
-        aria-label="Open chat — ask a question"
+        aria-label="Open chat to ask a question"
       >
         <MessageSquare size={16} style={{ color: "var(--accent)" }} />
         <span>Ask a question</span>

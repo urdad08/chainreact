@@ -109,7 +109,7 @@ def generate_dashboard_html(
     )
 
     approval_html = "\n".join(
-        f'<li><strong>{_esc(g.action)}</strong>{" — " + _esc(g.reason) if g.reason else ""}</li>'
+        f'<li><strong>{_esc(g.action)}</strong>{": " + _esc(g.reason) if g.reason else ""}</li>'
         for g in spec.human_approval
     ) or '<li class="muted">No human-approval gates declared for this process.</li>'
 
@@ -118,7 +118,7 @@ def generate_dashboard_html(
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>{_esc(spec.name)} — Operational Dashboard</title>
+<title>{_esc(spec.name)} - Operational Dashboard</title>
 <style>
   :root {{ --purple: #5b3df0; --bg: #f7f7fb; --card: #fff; --border: #e2e2ea; --danger: #c0341d; --ok: #1a7f37; }}
   * {{ box-sizing: border-box; }}
@@ -160,7 +160,7 @@ def generate_dashboard_html(
 <header>
   <h1>{_esc(spec.name)}</h1>
   <p>{_esc(spec.objective)}</p>
-  <p class="muted">Generated operational dashboard — bounded to this process's declared inputs, agents, and approval gates. No action beyond what this page shows is possible from here.</p>
+  <p class="muted">Generated operational dashboard, bounded to this process's declared inputs, agents, and approval gates. No action beyond what this page shows is possible from here.</p>
 </header>
 <main>
 
@@ -169,7 +169,7 @@ def generate_dashboard_html(
     <div class="row">
       <input id="backend-url" type="text" value="{_esc(backend_base_url)}" placeholder="https://your-chainreact-backend.onrender.com" />
     </div>
-    <p class="muted">This dashboard talks to the ChainReact backend above via its public API — it does not run any logic itself.</p>
+    <p class="muted">This dashboard talks to the ChainReact backend above via its public API; it does not run any logic itself.</p>
   </div>
 
   <div class="card">

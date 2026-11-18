@@ -139,7 +139,7 @@ export default function ExecutionDetailPage({ runId }: { runId: string }) {
             <span className="mono">{run.step_count}</span>
           </MetaItem>
           <MetaItem label="Agents">
-            <span className="mono">{run.agent_count ?? "—"}</span>
+            <span className="mono">{run.agent_count ?? "-"}</span>
           </MetaItem>
           <MetaItem label="System">
             <span className="mono text-xs">{run.system_id}</span>

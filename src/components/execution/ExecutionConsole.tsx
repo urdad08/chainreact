@@ -434,7 +434,7 @@ export default function ExecutionConsole({ systemId, processName, workflow, arch
                           </td>
                           <td>{r.status === "error" ? <Badge tone="danger">Error</Badge> : <RunStatusBadge status={r.status} />}</td>
                           <td className="truncate text-sm text-secondary" style={{ maxWidth: 300 }}>
-                            {r.error ?? (r.finalContext && Object.keys(r.finalContext).length ? Object.entries(r.finalContext).map(([k, v]) => `${k}=${typeof v === "string" ? v : JSON.stringify(v)}`).join(", ") : "—")}
+                            {r.error ?? (r.finalContext && Object.keys(r.finalContext).length ? Object.entries(r.finalContext).map(([k, v]) => `${k}=${typeof v === "string" ? v : JSON.stringify(v)}`).join(", ") : "-")}
                           </td>
                           <td>
                             {r.runId ? (
@@ -442,7 +442,7 @@ export default function ExecutionConsole({ systemId, processName, workflow, arch
                                 {shortId(r.runId)}
                               </a>
                             ) : (
-                              "—"
+                              "-"
                             )}
                           </td>
                         </tr>

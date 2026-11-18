@@ -179,13 +179,13 @@ export default function SystemWorkspace(props: SystemWorkspaceProps) {
             <Card>
               <CardHeader title="Allowed permissions" />
               <div className="card-body row wrap gap-1">
-                {spec.permissions.allowed.length ? spec.permissions.allowed.map((p) => <Badge key={p} tone="success">{p}</Badge>) : <span className="text-tertiary text-sm">—</span>}
+                {spec.permissions.allowed.length ? spec.permissions.allowed.map((p) => <Badge key={p} tone="success">{p}</Badge>) : <span className="text-tertiary text-sm">-</span>}
               </div>
             </Card>
             <Card>
               <CardHeader title="Forbidden permissions" />
               <div className="card-body row wrap gap-1">
-                {spec.permissions.forbidden.length ? spec.permissions.forbidden.map((p) => <Badge key={p} tone="danger">{p}</Badge>) : <span className="text-tertiary text-sm">—</span>}
+                {spec.permissions.forbidden.length ? spec.permissions.forbidden.map((p) => <Badge key={p} tone="danger">{p}</Badge>) : <span className="text-tertiary text-sm">-</span>}
               </div>
             </Card>
           </div>

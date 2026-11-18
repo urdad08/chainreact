@@ -34,8 +34,8 @@ export default function ApprovalGatesEditor({ value, onChange, candidateActions,
       {!hideHeading && (
         <div className="stack gap-1">
           <label className="row gap-2" style={{ fontWeight: 600, fontSize: 14 }}>
-            Step 3 — Pick what needs a human's okay first
-            <HelpTip text="For anything listed here, the automation will stop and wait for a person to approve before it goes ahead — it won't just do it on its own. Good for anything sensitive or hard to undo, like sending an email or charging a card." />
+            Step 3: Pick what needs a human's okay first
+            <HelpTip text="For anything listed here, the automation will stop and wait for a person to approve before it goes ahead. It won't just do it on its own. Good for anything sensitive or hard to undo, like sending an email or charging a card." />
           </label>
           <p className="text-sm text-secondary">
             Pick from what you allowed above, or type your own (e.g. "send_email"). Leave this empty if nothing needs

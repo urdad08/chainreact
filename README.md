@@ -52,7 +52,7 @@ Deployment decision (APPROVED / BLOCKED)
 ```
 
 Everything the LLM produces is forced into a Pydantic schema (via structured
-outputs) and re-validated on the Python side — the LLM is never trusted as
+outputs) and re-validated on the Python side; the LLM is never trusted as
 the source of truth for permissions, approval gates, or correctness. That
 enforcement, plus the sandbox/runtime/audit layers below it, is the actual
 engineering contribution here, not the LLM calls themselves.
@@ -76,7 +76,7 @@ engineering contribution here, not the LLM calls themselves.
   agents with declared inputs/outputs/tools/permissions/memory). If the
   deterministic Policy Engine finds a problem (a forbidden permission, an
   agent with tools but no permissions), the issue is fed back to the LLM and
-  it retries — up to `MAX_REPAIR_ATTEMPTS` (3) — *before* anything ships.
+  it retries, up to `MAX_REPAIR_ATTEMPTS` (3), *before* anything ships.
 - **Policy Engine**: re-checks every synthesized agent's permissions against
   `ProcessSpec.permissions` and checks that any agent with tool bindings
   actually holds a covering permission. This is a security boundary, so it
@@ -89,13 +89,13 @@ engineering contribution here, not the LLM calls themselves.
 - **Sandbox Executor**: generates a deterministic `TestCase` suite from the
   spec (structural connectivity, permission-subset checks, tool/permission
   coverage, one test per approval gate, one advisory test per success
-  condition), then walks the compiled `WorkflowGraph` node by node — calling
+  condition), then walks the compiled `WorkflowGraph` node by node, calling
   a `MockTool` for every agent's declared tool operations and simulating a
-  decision at every `human_approval` gate — producing a readable execution
+  decision at every `human_approval` gate, producing a readable execution
   trace and a pass/fail `SandboxReport`. **No real CRM/email/DB is ever
   touched**; structural/permission/approval failures are hard deployment
   gates, success-condition checks are advisory.
-- **Runtime Executor**: goes one step further than the sandbox — for a
+- **Runtime Executor**: goes one step further than the sandbox: for a
   sample input record you provide, it actually asks the LLM to play each
   agent's role given the declared contract and whatever earlier agents
   produced, threading real values (an actual lead score, an actual
@@ -117,7 +117,7 @@ engineering contribution here, not the LLM calls themselves.
   `GET /api/audit/{process_name}`. **Survives restarts**: the free hosting
   tier spins the backend process down on inactivity and restarts it on the
   next request, which would otherwise silently wipe the in-memory trail
-  even though the JSONL file on disk is untouched — `audit.py` replays that
+  even though the JSONL file on disk is untouched; `audit.py` replays that
   file back into memory once at import time, so a trail generated before a
   spin-down is still there after the server wakes back up.
 - **Deployment gate**: `PipelineResult.deployment_approved` is `true` only
@@ -129,12 +129,12 @@ engineering contribution here, not the LLM calls themselves.
   ChainReact should construct "a bounded operational dashboard" for the
   process, not just an internal spec. `POST /api/dashboard/generate`
   (wired to a "Download Operational Dashboard" button) renders one
-  self-contained HTML file — no build step, no external JS/CSS — that IS
+  self-contained HTML file (no build step, no external JS/CSS) that IS
   the operational interface for that specific process: an input form built
   from exactly `ProcessSpec.input_data`, the synthesized agents and
   workflow shown read-only, and buttons that call the live backend's
   `/api/runtime/execute` and `/api/sandbox/run` with this process's spec
-  baked in as constants, so the page is bounded to exactly this process —
+  baked in as constants, so the page is bounded to exactly this process:
   it cannot be repointed at a different one. Deterministic and
   template-based on purpose (no LLM call): a page a human runs real
   actions from should never depend on model sampling for its correctness.
@@ -142,18 +142,18 @@ engineering contribution here, not the LLM calls themselves.
 - **Project Overview page**: a second view (toggle at the top of the app,
   "Project Overview" vs "Live Demo") built into the same hosted site,
   covering the problem/users/motivation, the solution and user journey,
-  what's complete/limited/next, team contributions, and — all inline as
-  hand-built SVG, zero external dependencies — the 4 required Use Case
+  what's complete/limited/next, team contributions, and (all inline as
+  hand-built SVG, zero external dependencies) the 4 required Use Case
   Diagrams, 5 required Sequence Diagrams, and the Class Diagram
   (`src/pages/OverviewPage.tsx`, `src/diagrams/`). **Edit the `TEAM` array
-  in `OverviewPage.tsx` with your real teammates before presenting** — it
+  in `OverviewPage.tsx` with your real teammates before presenting**; it
   currently has placeholder names.
 - **In-app Assistant Chat**: a floating chat widget (bottom-right of the
   dashboard) backed by `POST /api/chat`, using the same Gemini client as
   every other stage but with plain-text conversation instead of a
   structured schema. It can answer questions about how ChainReact itself
   works (what the policy engine does, why an approval gate exists) as well
-  as general questions about AI agents/agentic systems — handy for live
+  as general questions about AI agents/agentic systems, handy for live
   Q&A during a demo.
 - **React + TypeScript dashboard**: requirement textbox → status bar
   (agent/tool/approval-gate counts, policy result, deployment gate) →
@@ -217,7 +217,7 @@ chainreact/
 ### Backend
 
 Requires Python 3.11+ (FastAPI and the `google-genai` SDK both run natively
-on Apple Silicon — no Rosetta needed). If you don't have it:
+on Apple Silicon, no Rosetta needed). If you don't have it:
 
 ```bash
 brew install python@3.12
@@ -241,7 +241,7 @@ uvicorn app.main:app --reload --port 8000
 
 Runs at `http://localhost:8000` (interactive docs at `/docs`).
 
-Run the unit tests any time — `test_validation.py` and `test_sandbox.py`
+Run the unit tests any time: `test_validation.py` and `test_sandbox.py`
 need no LLM call; `test_repair*.py` and `test_runtime.py` may hit the LLM
 depending on how they're written, so check before running them without a
 key configured:
@@ -273,7 +273,7 @@ Runs at `http://localhost:5173` and talks to the backend at
 
 Both images are built from multi-arch bases (`python:3.12-slim`,
 `node:20-slim`), so this runs natively on M-series Macs via Docker
-Desktop — no `--platform` flag needed.
+Desktop, no `--platform` flag needed.
 
 ```bash
 export GEMINI_API_KEY=your-real-key
@@ -282,7 +282,7 @@ docker compose up --build
 
 ## Demo flow
 
-1. Open the frontend. A CRM lead-management requirement is pre-filled —
+1. Open the frontend. A CRM lead-management requirement is pre-filled:
    edit it or paste your own.
 2. Click **Generate Agent System**. The backend runs Requirement Analyst →
    Validation → Agent Architect (with up to 3 self-repair attempts) →
@@ -310,7 +310,7 @@ docker compose up --build
   Agent Architect prompt asks the LLM to only grant allowed permissions,
   but `policy.py` re-checks every agent's permissions in plain Python
   against `ProcessSpec.permissions`, and separately checks that every
-  agent with tool bindings holds a covering permission — this is what
+  agent with tool bindings holds a covering permission; this is what
   actually blocks a rogue or hallucinated permission or an under-permissioned
   tool call from reaching the workflow stage.
 - **Repair happens before anything ships, not after.** Rather than
@@ -320,16 +320,16 @@ docker compose up --build
   addendum) up to `MAX_REPAIR_ATTEMPTS` times, so a first-draft mistake
   never needs to leave the synthesis stage.
 - **Sandbox vs. Runtime is a deliberate split.** The Sandbox Executor never
-  calls the LLM — it's a fast, reproducible structural check of what was
+  calls the LLM; it's a fast, reproducible structural check of what was
   synthesized (is it connected, does the approval gate exist, do
   permissions match) that gates deployment. The Runtime Executor is the
   opposite: it *does* call the LLM, once per agent, to produce plausible
-  real values and show them flowing through the process — useful for a
+  real values and show them flowing through the process, useful for a
   demo, but explicitly documented as demonstration-grade, not a
   replacement for real per-agent code or live tool integrations.
 - **The audit trail is the paper trail for the deployment decision.**
-  Every stage's outcome — including which self-repair attempts fired and
-  what the sandbox found — is timestamped and retrievable per process
+  Every stage's outcome, including which self-repair attempts fired and
+  what the sandbox found, is timestamped and retrievable per process
   name, so "why was this approved/blocked" is always answerable after the
   fact, not just in the moment.
 - **The workflow graph is the contract between backend and frontend**, not

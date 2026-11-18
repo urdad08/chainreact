@@ -50,10 +50,10 @@ def run_sandbox(
         result.visited_node_ids.add(current.id)
 
         if current.type == "start":
-            result.trace.append(f"▶ start — process '{spec.name}'")
+            result.trace.append(f"▶ start: process '{spec.name}'")
 
         elif current.type == "end":
-            result.trace.append("■ end — workflow complete")
+            result.trace.append("■ end: workflow complete")
             break
 
         elif current.type == "agent":
@@ -77,7 +77,7 @@ def run_sandbox(
 
         elif current.type == "human_approval":
             decision = "approved" if auto_approve else "rejected"
-            result.trace.append(f"⏸ human approval requested — simulated decision: {decision}")
+            result.trace.append(f"⏸ human approval requested (simulated decision: {decision})")
             if not auto_approve:
                 result.trace.append("    execution halted: approval was rejected")
                 result.halted_at_approval = True
