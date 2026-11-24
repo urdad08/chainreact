@@ -202,3 +202,15 @@ def test_stream_emits_running_events_before_steps_complete():
     running = [e for e in events if e["type"] == "running" and e["node_ids"]]
     assert any("worker" in e["node_ids"] for e in running)
     assert all("at" in e for e in events if e["type"] == "step")
+
+
+def test_resume_after_approval_keeps_the_runs_original_real_tools_setting():
+    """Regression: a run started with allow_real_tools=False must not turn real tools on when resumed."""
+    stored = system_store.save_system(_simple_spec(), _simple_arch(), _approval_workflow())
+    with patch("app.runtime.executor._simulate_agent_output", return_value={"result": "done"}):
+        run_id = client.post("/api/execution/start", json={"system_id": stored.system_id, "auto_approve": False, "allow_real_tools": False}).json()["run_id"]
+        _wait_for_status(run_id, {"waiting_approval"})
+        with patch("app.api.execution._resume_in_background") as resume:
+            assert client.post(f"/api/execution/{run_id}/approve", json={"approved": True}).status_code == 200
+            time.sleep(0.2)
+    assert resume.call_args.args[-1] is False

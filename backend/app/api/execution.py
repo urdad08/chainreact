@@ -113,7 +113,7 @@ def api_start_execution(body: StartExecutionIn) -> StartExecutionOut:
     if stored is None:
         raise HTTPException(404, f"No stored system with id '{body.system_id}'.")
 
-    run_id = execution_store.create_run(body.system_id, stored.process_name, body.input_data)
+    run_id = execution_store.create_run(body.system_id, stored.process_name, body.input_data, allow_real_tools=body.allow_real_tools)
     audit.record(stored.process_name, "execution_started", f"Live execution run {run_id} started.", {"run_id": run_id, "input_data": body.input_data})
 
     thread = threading.Thread(
@@ -211,7 +211,7 @@ def api_approve_execution(run_id: str, body: ApproveIn) -> Dict[str, Any]:
 
     thread = threading.Thread(
         target=_resume_in_background,
-        args=(run_id, stored.process_spec, stored.agent_architecture, stored.workflow, run["input_data"], run["checkpoint"], body.approved, True),
+        args=(run_id, stored.process_spec, stored.agent_architecture, stored.workflow, run["input_data"], run["checkpoint"], body.approved, bool(run.get("allow_real_tools", False))),
         daemon=True,
     )
     thread.start()

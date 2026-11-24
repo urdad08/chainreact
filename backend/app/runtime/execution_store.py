@@ -28,7 +28,7 @@ def _now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
-def create_run(system_id: str, process_name: str, input_data: Dict[str, Any]) -> str:
+def create_run(system_id: str, process_name: str, input_data: Dict[str, Any], allow_real_tools: bool = False) -> str:
     run_id = uuid.uuid4().hex[:12]
     with _LOCK:
         _RUNS[run_id] = {
@@ -36,6 +36,7 @@ def create_run(system_id: str, process_name: str, input_data: Dict[str, Any]) ->
             "system_id": system_id,
             "process_name": process_name,
             "input_data": input_data,
+            "allow_real_tools": allow_real_tools,  # remembered so a resume after approval keeps the same safety mode
             "status": "running",
             "steps": [],
             "step_times": [],
